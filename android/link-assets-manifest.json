@@ -1,0 +1,33 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Gogh-ExtraBold.otf",
+      "sha1": "8ae3e075930e789117e2e89b66bd670cd8657b56"
+    },
+    {
+      "path": "assets/fonts/Gogh-ExtraBoldItalic.otf",
+      "sha1": "24c463f4ca845b2fec9b399ec549f49a800938e7"
+    },
+    {
+      "path": "assets/fonts/goodlight-light.otf",
+      "sha1": "0a5ffe55a9d3270c846f9e5f1a03517c6f53dfb0"
+    },
+    {
+      "path": "assets/fonts/goodlight.otf",
+      "sha1": "5f604c3e099757a5f24fca3dfd973ddfb7eaaeb8"
+    },
+    {
+      "path": "assets/fonts/HyningsHandwritingV2-Regular.ttf",
+      "sha1": "42d1092cee4f32f8a19758fd451b01765f00a680"
+    },
+    {
+      "path": "assets/fonts/NaomisHand-Regular.ttf",
+      "sha1": "b1941088459c18882737007320b38f35f3eec6ef"
+    },
+    {
+      "path": "assets/fonts/SUBSCRIBER-Regular.otf",
+      "sha1": "2a712496769136fd30d25e3fd4e844476bb7b418"
+    }
+  ]
+}
