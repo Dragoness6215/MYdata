@@ -1,9 +1,4 @@
-/* Reminder of the start up commands
- * cd C:\Users\johan\OneDrive\Documents\BluetoothAppSummerResearch\MYdata
- * npx react-native run-android
- */
-
-// REact Native Imports
+// React Native Imports
 import React, { useEffect, useState, useCallback, useRef} from 'react';
 import {LogBox, Text, View, FlatList, TouchableWithoutFeedback,ScrollView, Image, NativeModules, NativeEventEmitter, SectionList, TextInput, Appearance, Dimensions, Linking, Modal,} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
