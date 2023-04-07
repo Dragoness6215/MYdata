@@ -1,6 +1,6 @@
 import React,{Component, useState, useEffect} from 'react';
 import {Node} from 'react';
-import {ScrollView,SafeAreaView,StyleSheet,View,Text,StatusBar,NativeModules,NativeEventEmitter,Button,Platform,PermissionsAndroid,FlatList,TouchableHighlight,} from 'react-native';
+import {ScrollView, SafeAreaView, StyleSheet, View, Text, StatusBar, NativeModules, NativeEventEmitter, Button, Platform, PermissionsAndroid, FlatList, TouchableHighlight } from 'react-native';
 import BleManager, { start } from 'react-native-ble-manager';
 import BluetoothStateManager from 'react-native-bluetooth-state-manager';
 import AsyncCode from './asyncStorage.js';
@@ -10,7 +10,7 @@ const bleEmitter = new NativeEventEmitter(BleManagerModule);
 
 import { stringToBytes } from 'convert-string';
 import { Console } from 'console';
-const Buffer=require('buffer/').Buffer;
+const Buffer = require('buffer/').Buffer;
 
 // This class permits the switching between various graph types.
 class BleManagerCode {
@@ -134,7 +134,7 @@ class BleManagerCode {
         console.error(error);
         success = false;
       });
-      await bleEmitter.addListener("BleManagerDidUpdateValueForCharacteristic", ({ value, peripheral, characteristic, service }) => {this.onDataReceived(value,characteristic)});
+      bleEmitter.addListener("BleManagerDidUpdateValueForCharacteristic", ({ value, peripheral, characteristic, service }) => {this.onDataReceived(value,characteristic)});
       return success;
     }
   
@@ -326,7 +326,6 @@ class BleManagerCode {
       bleEmitter.addListener('BleManagerStopScan', this.handleStopScan);
       bleEmitter.addListener('BleManagerDisconnectPeripheral', this.handleDisconnectedPeripheral);
       bleEmitter.addListener('BleManagerDidUpdateValueForCharacteristic', this.handleUpdateValueForCharacteristic);
-      
     }
     
     checkPermissions = () => {

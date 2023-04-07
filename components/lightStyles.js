@@ -17,10 +17,10 @@ let blue="#438ab0";
 let teal="#43b0a9";
 let indigo="#6243b0"
 
-let largeFontSize=40;
-let mediumFontSize=25;
-let smallFontSize=20;
-let tinyFontSize=18;
+let largeFontSize = 20;
+let mediumFontSize = 25;
+let smallFontSize = 20;
+let tinyFontSize = 18;
 
 let minorFont='Gogh-ExtraBold';
 let majorFont='goodlight';
@@ -390,6 +390,11 @@ export default StyleSheet.create({
         textAlign: "center",
         padding: 5,
         margin: 10,
+    },
+    headerIcon:{
+        alignSelf:'center', 
+        width: 30, 
+        height: 30
     },
 })
 

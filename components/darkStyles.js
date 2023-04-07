@@ -19,7 +19,7 @@ let blue="#438ab0";
 let teal="#43b0a9";
 let indigo="#6243b0"
 
-let largeFontSize=40;
+let largeFontSize=32;
 let mediumFontSize=25;
 let smallFontSize=20;
 let tinyFontSize=18;
@@ -64,8 +64,6 @@ export default StyleSheet.create({
         alignItems: 'center',
         backgroundColor: backgroundColor,
     },
-
-
     title: {
         alignItems: 'center',
         color: textColor,
@@ -156,8 +154,6 @@ export default StyleSheet.create({
         flexWrap:'wrap',
         overflow: 'hidden',  
     },
-
-
     input:{
         marginBottom:10,
         borderWidth:4,
@@ -170,8 +166,6 @@ export default StyleSheet.create({
         fontFamily: minorFont,
         flexWrap:'wrap',
     },
-
-
     button: {
         alignItems: 'center',
         backgroundColor: midtone,
@@ -409,6 +403,11 @@ export default StyleSheet.create({
         textAlign: "center",
         padding: 5,
         margin: 10,
+    },
+    headerIcon:{
+        alignSelf:'center', 
+        width: 30, 
+        height: 30
     },
 })
 

@@ -51,33 +51,27 @@ class AsyncStorageCode {
       };
 
       // changes the graph's type
-      changeGraphType = (type,key) => {
-        for (let i =0; i<TextArray.length;i++){
-          if(key==TextArray[i].Key){
-            TextArray[i].GraphType=type;
+      changeGraphType = (type, key) => {
+        for (let i = 0; i < TextArray.length; i++){
+          if(key == TextArray[i].Key){
+            TextArray[i].GraphType = type;
           }
-      }
+        }
       this.setAllData();
       };
   
       //prepare to put it into the place by storing in the text array
-      submitHandler = (Title) =>{
+      submitHandler = (Title, Description) =>{
         if (Title.length === 0){return;}
+        if (Description.length === 0) {Description = "No Description... Yet";}
+        
         const Key = Math.random().toString();
-        let TempData={Data:[{
-                            ButtonName:"Button0",
-                            data:[]
-                        },
-                        {
-                          ButtonName:"Button1",
-                          data:[]
-                        },
-                        {
-                          ButtonName:"Button2",
-                          data:[]
-                        },
+        let TempData={Data:[
+          {ButtonName:"Button0", data:[]},
+          {ButtonName:"Button1", data:[]},
+          {ButtonName:"Button2", data:[]},
         ]};
-        let Description="No Description... Yet";
+
         let Data=TempData.Data;
         let GraphType='NoDataYet';
         const newItem = [{ Title, Data, Key, Description, GraphType}, ...TextArray];
@@ -165,8 +159,8 @@ class AsyncStorageCode {
 
       // adds data to a prexisting graph
       addToData(key,newData,buttonNumber){
-        for (let i =0; i<TextArray.length;i++){
-          if(key==TextArray[i].Key){
+        for (let i = 0; i < TextArray.length; i++){
+          if(key == TextArray[i].Key){
             TextArray[i].Data[buttonNumber].data.push(newData);
           }
         }
