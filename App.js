@@ -1,6 +1,6 @@
 // React Native Imports
-import React, { useEffect, useState, useCallback, useRef} from 'react';
-import {Button, LogBox, Text, View, FlatList, TouchableWithoutFeedback, TouchableOpacity, ScrollView, StyleSheet, Image, NativeModules, NativeEventEmitter, SectionList, TextInput, Appearance, Dimensions, Linking, Modal,} from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { LogBox, Text, View, FlatList, TouchableWithoutFeedback, TouchableOpacity, ScrollView, StyleSheet, Image, NativeModules, NativeEventEmitter, SectionList, TextInput, Appearance, Dimensions, Linking, Modal } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { PermissionsAndroid, Platform } from "react-native";
 
@@ -9,7 +9,7 @@ import {ImageResizeMode} from 'react-native/Libraries/Image/ImageResizeMode'
 // External Library
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import ViewShot from "react-native-view-shot";
 import CameraRoll from "@react-native-community/cameraroll";
@@ -127,16 +127,17 @@ export default class App extends React.Component {
     return (
       <NavigationContainer animationEnabled={true} animationTypeForReplace={"push"}>
         <Stack.Navigator initialRouteName="Home">
-          <Stack.Screen name="Home"          component={HomeScreen}      options={backgroundDefault}/>
-          <Stack.Screen name="Graph Library" component={GraphLibrary}    options={backgroundDefault}/>
-          <Stack.Screen name="All Graphs"    component={SelectData}      options={backgroundDefault}/>
-          <Stack.Screen name="New Graph"     component={NewGraph}        options={backgroundDefault}/>
-          <Stack.Screen name="Settings"      component={Settings}        options={backgroundDefault}/>
-          <Stack.Screen name="Select Device" component={SelectDevice}    options={backgroundDefault}/>
-          <Stack.Screen name="Data Inputs"   component={ButtonSelection} options={backgroundDefault}/>
-          <Stack.Screen name="Graph"         component={Graph}           options={backgroundDefault}/>
-          <Stack.Screen name="Change Data"   component={AlterData}       options={backgroundDefault}/>
-          <Stack.Screen name="About"         component={About}           options={backgroundDefault}/>
+          <Stack.Screen name="Home"           component={HomeScreen}      options={backgroundDefault}/>
+          <Stack.Screen name="Graph Library"  component={GraphLibrary}    options={backgroundDefault}/>
+          <Stack.Screen name="All Graphs"     component={SelectData}      options={backgroundDefault}/>
+          <Stack.Screen name="New Graph"      component={NewGraph}        options={backgroundDefault}/>
+          <Stack.Screen name="Settings"       component={Settings}        options={backgroundDefault}/>
+          <Stack.Screen name="Select Device"  component={SelectDevice}    options={backgroundDefault}/>
+          <Stack.Screen name="Data Inputs"    component={ButtonSelection} options={backgroundDefault}/>
+          <Stack.Screen name="Graph"          component={Graph}           options={backgroundDefault}/>
+          <Stack.Screen name="Graph Settings" component={GraphSettings}   options={backgroundDefault}/>
+          <Stack.Screen name="Edit Data" component={EditData} options={backgroundDefault}/>
+          <Stack.Screen name="About"          component={About}           options={backgroundDefault}/>
         </Stack.Navigator>
       </NavigationContainer>
     );
@@ -548,7 +549,11 @@ function GraphLibrary({navigation}) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView style={styles.scrollView}>
+        <View>
+          <Text style={styles.title}> Graph Library </Text>
+          <View style={styles.barLine}/>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -653,11 +658,11 @@ function SelectData({navigation}) {
   }
 
   return (
-    <SafeAreaView style= {styles.background}>
+    <SafeAreaView style={styles.container}>
       <ScrollView>
-        <View style = {styles.container}>
+        <View>
           <View>
-            <Text style ={styles.title}> Graphs </Text>
+            <Text style={styles.title}> Graphs </Text>
             <View>
               <FlatList data={thisState.textArray} renderItem={({ item }) =>
                 <View style={styles.bottomLine}>
@@ -751,15 +756,18 @@ function SelectData({navigation}) {
 //New Graph Screen Code
 
 function NewGraph({ navigation }) {
+  //Updates variables with entered data
   const [name, onChangeName] = React.useState('');
   const [desc, onChangeDesc] = React.useState('');
 
+  //States for the alerts
   const [alertText, setAlertText] = useState("");
   const [alert, throwAlert] = useState(false);
   const [alertConfirm, throwAlertConfirm] = useState(false);
 
   const [thisState, setThisState]= useState({textArray: [], showAlert:false});
   
+  //On load, restore data from storage
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       AsyncCode.restoreFromAsync();
@@ -768,11 +776,13 @@ function NewGraph({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
+  //Updates the data in the storage 
   const updateData = async() => {
     AsyncCode.restoreFromAsync();
     setThisState({showAlert:false, textArray:AsyncCode.getTextArray()});
   }
 
+  //Checks if the entered title is valid
   const checkGraph = (title) => {
     if(title.length < 1) {
       setAlertText("Please Enter A Graph Title");
@@ -794,6 +804,7 @@ function NewGraph({ navigation }) {
     throwAlertConfirm(true);
   }
 
+  //Adds the new graph to storage and sends user back to graph list
   const addGraph = (title, desc) => {
     AsyncCode.submitHandler(title, desc);
     updateData();
@@ -801,9 +812,9 @@ function NewGraph({ navigation }) {
   }
   
   return (
-    <SafeAreaView style={styles.background}>
+    <SafeAreaView style={styles.container}>
       <ScrollView>
-        <View style={styles.container}>
+        <View>
           <Text style={styles.title}> New Graph </Text>
           <View style={styles.space}/>
           
@@ -825,6 +836,7 @@ function NewGraph({ navigation }) {
           </View>
         </View>
 
+        {/*Invalid Title Error*/}
         <AwesomeAlert
           show={alert}
           showProgress={false}
@@ -841,6 +853,7 @@ function NewGraph({ navigation }) {
           onCancelPressed= {()=> { throwAlert(false); }}
         />
 
+        {/*Confirmation of All Data Fields*/}
         <AwesomeAlert
           show = {alertConfirm}
           showProgress = {false}
@@ -849,11 +862,11 @@ function NewGraph({ navigation }) {
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={true}
           showConfirmButton={true}
-          showCancelButton = {true}
-          confirmButtonColor = "#63ba83"
-          cancelButtonColor = "#E07A5F"
-          confirmText = "Confirm"
-          cancelText = "Cancel"
+          showCancelButton={true}
+          confirmButtonColor="#63ba83"
+          cancelButtonColor="#E07A5F"
+          confirmText="Confirm"
+          cancelText="Cancel"
           contentContainerStyle={styles.alert}
           messageStyle={styles.alertBody}
           titleStyle={styles.alertText}
@@ -885,6 +898,14 @@ function Graph({ navigation}) {
   const [showAlert, setAlert] = useState(false);
   const [alertFailed, setFailedAlert] = useState(false);
   let buttonList = [];
+
+  //States for the alerts
+  const [alertText, setAlertText] = useState("");
+  const [alertMenu, throwAlertMenu] = useState(false);
+  const [alertDelete, throwAlertDelete] = useState(false);
+
+  const [thisState, setThisState] = useState({textArray:[], showAlert:false});
+  const [tempkey, setKey] = useState("");
 
   // this automatically checks the data every <MINUTE_MS> milliseconds.
   const MINUTE_MS = 250;
@@ -997,11 +1018,37 @@ function Graph({ navigation}) {
   }, []);
 
   // used to update GLOBAL data and navigate to alter data
-  const navigateAndSendDataAlter = (item) => {
+  const navigateGraphSettings = (item) => {
     GLOBAL.ITEM = item;
     GLOBAL.KEY = item.Key;
     GLOBAL.TITLES = item.Title;
-    navigation.navigate('Change Data');
+    navigation.navigate('Graph Settings');
+  }
+
+  const navigateEditData = (item) => {
+    GLOBAL.ITEM = item;
+    GLOBAL.KEY = item.Key;
+    GLOBAL.TITLES = item.Title;
+    navigation.navigate('Edit Data');
+  }
+
+  const deleteGraph = () => {
+    AsyncCode.removeItem(tempkey);
+    if(GLOBAL.BUTTON0KEY == tempkey) {
+      Console.log("Same Key");
+      GLOBAL.BUTTON0KEY == null;
+    }
+    if(GLOBAL.BUTTON1KEY == tempkey) {
+      Console.log("Same Key");
+      GLOBAL.BUTTON0KEY == null;
+    }
+    if(GLOBAL.BUTTON2KEY == tempkey) {
+      Console.log("Same Key");
+      GLOBAL.BUTTON0KEY == null;
+    }
+    AsyncCode.restoreFromAsync();
+    setThisState({showAlert:false, textArray:AsyncCode.getTextArray()});
+    navigation.navigate("All Graphs")
   }
 
   const buttonPush = async (buttonPushed) =>{
@@ -1015,10 +1062,30 @@ function Graph({ navigation}) {
     GLOBAL.BUTTONPRESSED = true;
   }
 
+  const customAlert = () => {
+    return (
+      <View>
+        <TouchableOpacity opacity={0.5} onPress={() => { navigateGraphSettings(RawData); throwAlertMenu(false); }}>
+          <Text style={styles.lightButton}> Graph Settings </Text>
+        </TouchableOpacity>
+        <TouchableOpacity opacity={0.5} onPress={() => { navigateEditData(RawData); throwAlertMenu(false); }}>
+          <Text style={styles.lightButton}> Edit Data Points </Text>
+        </TouchableOpacity>
+        <TouchableOpacity opacity={0.5} onPress={() => { onImageLoad(); throwAlertMenu(false); }}>
+          <Text style={styles.lightButton}> Export Data </Text>
+        </TouchableOpacity>
+        <View style={{marginVertical: 15}}/>
+        <TouchableOpacity opacity={0.5} onPress={() => { setKey(GLOBAL.KEY); throwAlertMenu(false); throwAlertDelete(true); }}>
+          <Text style={styles.warningButton}> Delete Graph </Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
   React.useEffect( () => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableWithoutFeedback onPress={() => {navigateAndSendDataAlter(RawData)}}>
+        <TouchableWithoutFeedback onPress={() => { throwAlertMenu(true); }}>
           <Image
             source={require('./assets/SettingsIcon.png')}
             style={styles.headerIcon}
@@ -1029,8 +1096,8 @@ function Graph({ navigation}) {
   }, [navigation, RawData]);
 
   return (
-    <SafeAreaView style= {styles.container}>
-      <ScrollView style = {styles.scrollView}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
         <ViewShot ref={ref}>
           <Text style={styles.title}>{RawData.Title}</Text>
           <Text style={styles.regularText}> {RawData.Description}</Text>
@@ -1075,15 +1142,15 @@ function Graph({ navigation}) {
           <View style={styles.barLine}></View>
           <Text style={styles.header}> Add Data </Text>
 
-          <TouchableWithoutFeedback onPress={() => buttonPush(0)}>
+          <TouchableOpacity opacity={0.5} onPress={() => buttonPush(0)}>
             <Text style={styles.lightButton}> Button 0 </Text>
-          </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback onPress={() => buttonPush(1)}>
+          </TouchableOpacity>
+          <TouchableOpacity opacity={0.5} onPress={() => buttonPush(1)}>
             <Text style={styles.lightButton}> Button 1 </Text>
-          </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback onPress={() => buttonPush(2)}>
+          </TouchableOpacity>
+          <TouchableOpacity opacity={0.5} onPress={() => buttonPush(2)}>
             <Text style={styles.lightButton}> Button 2 </Text>
-          </TouchableWithoutFeedback>
+          </TouchableOpacity>
         
           {/* <Text style={styles.subheader}> Export Data</Text>
           <TouchableWithoutFeedback onPress={()=>(exportData())}>
@@ -1094,12 +1161,43 @@ function Graph({ navigation}) {
           </TouchableWithoutFeedback>*/}
           
         </View>
+
+        <AwesomeAlert
+          show={alertMenu}
+          title={"Graph Options"}
+          closeOnTouchOutside={true}
+          closeOnHardwareBackPress={false}
+          showCancelButton={false}
+          showConfirmButton={false}
+          contentContainerStyle={styles.alert}
+          titleStyle={styles.alertText}
+          customView={ customAlert() }
+          onDismiss={() => { throwAlertMenu(false); }}
+        />
+
+        <AwesomeAlert
+          show={alertDelete}
+          title={"Delete Graph"}
+          message= {"Are You Sure You Want to Delete This Graph?"}
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={true}
+          showConfirmButton={true}
+          showCancelButton={true}
+          confirmText="Delete"
+          confirmButtonColor="#E07A5F"
+          cancelButtonColor='#63ba83'
+          contentContainerStyle={styles.alert}
+          messageStyle={styles.alertBody}
+          titleStyle={styles.alertText}
+          onConfirmPressed={() => { deleteGraph(); throwAlertDelete(false); }}
+          onCancelPressed={()=> { throwAlertDelete(false); }}
+        />
           
         <AwesomeAlert
           show={showAlert}
           showProgress={false}
           title={"Graph Saved"}
-          message= {"Graph Saved to Camera Roll"}
+          message={"Graph Saved to Camera Roll"}
           closeOnTouchOutside={true}
           closeOnHardwareBackPress={false}
           showCancelButton={false}
@@ -1134,7 +1232,7 @@ function Graph({ navigation}) {
 }
 
 // Alters the data set and some graph settings
-function AlterData({navigation}) {
+function GraphSettings({navigation}) {
   const [RawData, setRawData] = useState({});
   const [curData, setCurData] = useState([
     { ButtonName:"Button0", data:[0] },
@@ -1325,9 +1423,9 @@ function AlterData({navigation}) {
   }
 
   return (
-    <SafeAreaView style= {styles.container}>
-      <ScrollView style = {styles.scrollView}>
-        <Text style={styles.title}> {"Graph Settings"} </Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        <Text style={styles.title}> Graph Settings </Text>
         <Picker style={styles.picker} selectedValue={whatToShow} mode="dropdown" onValueChange={(itemValue, itemIndex) => (setShowing(itemValue))}>
           <Picker.Item label="Pick an option" value="" style={styles.pickerDropdown}/>
           <Picker.Item label="Change Graph Type" value="ChangeGraphType" style={styles.pickerDropdown}/>
@@ -1605,6 +1703,21 @@ function AlterData({navigation}) {
   );
 }
 
+function EditData({navigation}) {
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        <View>
+          <Text style={styles.title}> Edit Data </Text>
+          <View style={styles.barLine}/>
+        </View>
+        
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
 // --------------------------- Information Pages --------------------------- \\
 
 // About page
@@ -1632,9 +1745,9 @@ function About({navigation}) {
   }
 
   return (
-    <View style ={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}> About </Text>
-      <Text style = {styles.regularText}> MYdata was developed as wearable technology to empower people to collect data about their daily lives and an accompanying application to process that data. </Text>
+      <Text style={styles.regularText}> MYdata was developed as wearable technology to empower people to collect data about their daily lives and an accompanying application to process that data. </Text>
       <Text style={styles.regularText}> This application was developed as a summer research project at the College of Charleston's CAT Lab by Professor Schoeman and Jo Jackley. </Text>
       <Text style={styles.regularText}> Thank you to the School of Science and Mathmatics and the Computer Science Department of the College of Charleston! </Text>
       <TouchableWithoutFeedback onPress={() => sendToCSCIWebsite()}>
