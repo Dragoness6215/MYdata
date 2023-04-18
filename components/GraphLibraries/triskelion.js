@@ -124,7 +124,7 @@ descriptionList=[];
             if(rawJson.data[j].Month<10){
               tempJson.data+="0";
             }
-              tempJson.data+=(rawJson.data[j].Month+1)+"-";
+            tempJson.data+=(rawJson.data[j].Month+1)+"-";
 
             if(rawJson.data[j].Day<10){
               tempJson.data+="0";
@@ -221,7 +221,7 @@ descriptionList=[];
         return (
           <View style={this.props.styles.container}>
               <View>
-              <View style={this.props.styles.border}>
+                <View style={this.props.styles.border}>
                     <Dot data={this.state.graphData} pressHandler={this.whenPressed}></Dot>
                 </View>
                 <Text style={this.props.styles.regularText}> Press on the dots to see more information </Text>

@@ -35,6 +35,7 @@ import FlowerGraph from './components/GraphLibraries/FlowerGraph.js';
 import Triskelion from './components/GraphLibraries/triskelion.js';
 import ChessClock from './components/GraphLibraries/chessClock.js';
 import ButtonPressedPerDay from './components/GraphLibraries/EachButtonPressedPerDay.js';
+import Dandelion from "./components/GraphLibraries/dandelion.js";
  
 const BleManagerModule = NativeModules.BleManager;
 const bleEmitter = new NativeEventEmitter(BleManagerModule);
@@ -54,6 +55,7 @@ const graphOptions =[
   <Picker.Item label="Knot" value="Triskelion" style={styles.pickerDropdown} />,
   <Picker.Item label="Chess Clock" value="ChessClock" style={styles.pickerDropdown}/>,
   <Picker.Item label="Total Buttons Pressed per Day" value="ButtonPressedPerDay" style={styles.pickerDropdown}/>,
+  <Picker.Item label="Dandelion" value="Dandelion" style={styles.pickerDropdown} />,
 ]
 
 // graphDescriptions is the graph's descriptions
@@ -67,6 +69,7 @@ const graphDescriptions = [
   <Text style={styles.tinyText} name="Triskelion"> Displays the number of button pairs pressed. </Text>,
   <Text style={styles.tinyText} name="ChessClock"> Displays the duration between the same button being pressed.</Text>,
   <Text style={styles.tinyText} name="ButtonPressedPerDay"> Displays the number of times each button was pressed each day </Text>,
+  <Text style={styles.tinyText} name="Dandelion"> Displays the buttons pressed over a week. </Text>,
 ]
 // DON'T FORGET TO ADD TO GRAPHSWITCH IN GRAPHS AS WELL
 
@@ -116,7 +119,7 @@ export default class App extends React.Component {
   // signals to load the fonts
   //Uncomment AsyncCode.addBigData() to add a large procedurally generated data set
   componentDidMount() {
-    //AsyncCode.addBigData();
+    AsyncCode.addBigData();
     LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
     this.getStuff();
     BleCode.checkPermissions();
@@ -129,14 +132,14 @@ export default class App extends React.Component {
         <Stack.Navigator initialRouteName="Home">
           <Stack.Screen name="Home"           component={HomeScreen}      options={backgroundDefault}/>
           <Stack.Screen name="Graph Library"  component={GraphLibrary}    options={backgroundDefault}/>
-          <Stack.Screen name="All Graphs"     component={SelectData}      options={backgroundDefault}/>
+          <Stack.Screen name="My Graphs"      component={SelectData}      options={backgroundDefault}/>
           <Stack.Screen name="New Graph"      component={NewGraph}        options={backgroundDefault}/>
           <Stack.Screen name="Settings"       component={Settings}        options={backgroundDefault}/>
           <Stack.Screen name="Select Device"  component={SelectDevice}    options={backgroundDefault}/>
           <Stack.Screen name="Data Inputs"    component={ButtonSelection} options={backgroundDefault}/>
           <Stack.Screen name="Graph"          component={Graph}           options={backgroundDefault}/>
           <Stack.Screen name="Graph Settings" component={GraphSettings}   options={backgroundDefault}/>
-          <Stack.Screen name="Edit Data" component={EditData} options={backgroundDefault}/>
+          <Stack.Screen name="Edit Data"      component={EditData}        options={backgroundDefault}/>
           <Stack.Screen name="About"          component={About}           options={backgroundDefault}/>
         </Stack.Navigator>
       </NavigationContainer>
@@ -203,7 +206,7 @@ function HomeScreen({navigation}) {
       <ImageSwitch styles={styles}/>
         <View style={styles.bottomLine}></View>
         <View>
-          <TouchableWithoutFeedback onPress={() => navigation.navigate('All Graphs')}>
+          <TouchableWithoutFeedback onPress={() => navigation.navigate('My Graphs')}>
             <Text style={styles.bigButton}> My Graphs </Text>
           </TouchableWithoutFeedback>
         </View>
@@ -634,28 +637,6 @@ function SelectData({navigation}) {
   // Adds a new Graph. 
   // if the name doesn't exist, it throws an alert.
   //if the name is already taken, it throws an alert.
-  const addNewGraph = (title) => {
-    navigation.navigate('New Graph');
-    // let newName=true;
-    // if(title.length<1){
-    //   setAlertText("No Graph Name");
-    //   throwAlert(true);
-    //   console.log("No Name");
-    //   return;
-    // }
-    // for(let i=0; i<thisState.textArray.length;i++){
-    //   console.log(thisState.textArray[i].Title);
-    //   if(title==thisState.textArray[i].Title){
-    //     newName=false;
-    //     setAlertText("This graph name already exists");
-    //     throwAlert(true);
-    //     console.log("Same Name");
-    //     return;
-    //   }
-    // }
-    // AsyncCode.submitHandler(title); 
-    // updateData();
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -686,7 +667,7 @@ function SelectData({navigation}) {
                     onChangeText={(val)=>changeHandler(val)}
                 /> */}
               <View>
-                <TouchableWithoutFeedback onPress={() => {addNewGraph(text)}}>
+                <TouchableWithoutFeedback onPress={() => {navigation.navigate('New Graph');}}>
                   <Text style={styles.smallButton}> Create New Graph </Text>
                 </TouchableWithoutFeedback>
               </View>
@@ -757,8 +738,11 @@ function SelectData({navigation}) {
 
 function NewGraph({ navigation }) {
   //Updates variables with entered data
-  const [name, onChangeName] = React.useState('');
-  const [desc, onChangeDesc] = React.useState('');
+  const [name, setName] = useState('');
+  const [desc, setDesc] = useState('');
+  const [butt0, setButt0] = useState('');
+  const [butt1, setButt1] = useState('');
+  const [butt2, setButt2] = useState('');
 
   //States for the alerts
   const [alertText, setAlertText] = useState("");
@@ -766,6 +750,11 @@ function NewGraph({ navigation }) {
   const [alertConfirm, throwAlertConfirm] = useState(false);
 
   const [thisState, setThisState]= useState({textArray: [], showAlert:false});
+  let TempData = { Data:[
+    {ButtonName:"Button 0", data:[]},
+    {ButtonName:"Button 1", data:[]},
+    {ButtonName:"Button 2", data:[]},
+  ]};
   
   //On load, restore data from storage
   React.useEffect(() => {
@@ -805,10 +794,10 @@ function NewGraph({ navigation }) {
   }
 
   //Adds the new graph to storage and sends user back to graph list
-  const addGraph = (title, desc) => {
-    AsyncCode.submitHandler(title, desc);
+  const addGraph = (title, desc, butt0, butt1, butt2) => {
+    AsyncCode.submitHandler(title, desc, butt0, butt1, butt2);
     updateData();
-    navigation.navigate('All Graphs');
+    navigation.navigate('My Graphs');
   }
   
   return (
@@ -820,14 +809,37 @@ function NewGraph({ navigation }) {
           
           <Text style={styles.subheader}> Graph Name </Text>
           <View>
-            <TextInput multiline numberOfLines={1} placeholder="Graph Name" style={styles.input} onChangeText={onChangeName} value={name} editable maxLength={100}/>
+            <TextInput multiline numberOfLines={1} placeholder="Graph Name" style={styles.input} onChangeText={setName} value={name} editable maxLength={100}/>
           </View>
           <View style={styles.space}/>
           
           <Text style={styles.subheader}> Graph Description </Text>
           <View>
-            <TextInput multiline numberOfLines={4} placeholder="Graph Description" style={styles.input} onChangeText={onChangeDesc} value={desc} editable maxLength={1000}/>
+            <TextInput multiline numberOfLines={4} placeholder="Graph Description" style={styles.input} onChangeText={setDesc} value={desc} editable maxLength={1000}/>
           </View>
+
+          <Text style={styles.subheader}> Button Names </Text>
+          <View>
+            <TextInput multiline numberOfLines={1} default={TempData.Data[0].ButtonName} style={styles.input} onChangeText={setButt0} value={butt0} editable maxLength={50}/>
+            <TextInput multiline numberOfLines={1} default={TempData.Data[1].ButtonName} style={styles.input} onChangeText={setButt1} value={butt1} editable maxLength={50}/>
+            <TextInput multiline numberOfLines={1} default={TempData.Data[2].ButtonName} style={styles.input} onChangeText={setButt2} value={butt2} editable maxLength={50}/>
+          </View>
+          
+          {/* <View> { Change Button Names }
+            <FlatList
+              data={filteredData}
+              renderItem={({item})=>(
+                <View>
+                  <Text style={styles.taskTitle}>{item.ButtonName}</Text>
+                  <TextInput numberOfLines={1} onChangeText={text => setTextValue1(text)} placeholder="New Button Name" style={styles.input} editable maxLength={100}/>
+                  <TouchableWithoutFeedback onPress={()=>(setButtonName(textValue1,item.ButtonName))}>
+                    <Text style={styles.smallButton}> Submit </Text>
+                  </TouchableWithoutFeedback>
+                </View>
+              )}
+              keyExtractor={(item, index)=>index.toString()}
+            />
+          </View> */}
           
           <View>
             <TouchableWithoutFeedback onPress={() => {checkGraph(name)}}>
@@ -870,7 +882,7 @@ function NewGraph({ navigation }) {
           contentContainerStyle={styles.alert}
           messageStyle={styles.alertBody}
           titleStyle={styles.alertText}
-          onConfirmPressed= {() => { throwAlertConfirm(false); addGraph(name, desc); }}
+          onConfirmPressed= {() => { throwAlertConfirm(false); addGraph(name, desc, butt0, butt1, butt2); }}
           onCancelPressed= {()=> { throwAlertConfirm(false); }}
         />
       </ScrollView>
@@ -1048,7 +1060,7 @@ function Graph({ navigation}) {
     }
     AsyncCode.restoreFromAsync();
     setThisState({showAlert:false, textArray:AsyncCode.getTextArray()});
-    navigation.navigate("All Graphs")
+    navigation.navigate("My Graphs")
   }
 
   const buttonPush = async (buttonPushed) =>{
@@ -1111,12 +1123,10 @@ function Graph({ navigation}) {
             <Triskelion rawData={RawData} key={refreshChild} styles={styles} name="Triskelion" />
             <ChessClock rawData={RawData} key={refreshChild} styles={styles} name="ChessClock"/>
             <ButtonPressedPerDay rawData={RawData} key={refreshChild} styles={styles} name="ButtonPressedPerDay"/>
+            <Dandelion rawData={RawData} key={refreshChild} styles={styles} name="Dandelion" />
             <View key={refreshChild} name="NoDataYet">{/* Change Graph Type */}
               <Text style={styles.subheader}> Change Graph Type </Text>
-              <Picker
-                style={styles.picker}
-                selectedValue={selectedOption}
-                mode="dropdown"
+              <Picker style={styles.picker} selectedValue={selectedOption} mode="dropdown"
                 onValueChange={(itemValue, itemIndex) => (setCurGraph(itemValue), setSelected(itemValue))}>
                 {graphOptions}
               </Picker>
@@ -1125,11 +1135,12 @@ function Graph({ navigation}) {
                 <Text style={styles.tinyText} key={refreshChild} name="BarGraph"> Displays the number of times each button is pressed. </Text>
                 <Text style={styles.tinyText} key={refreshChild} name="HeatMap"> Displays the number of times all buttons are pressed for each day. </Text>
                 <Text style={styles.tinyText} key={refreshChild} name="ButtonOrderGraph"> Displays the order of button pushes. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="TimesPerDay"> Displays when buttons are pressed each day.</Text>
+                <Text style={styles.tinyText} key={refreshChild} name="TimesPerDay"> Displays when buttons are pressed each day. </Text>
                 <Text style={styles.tinyText} key={refreshChild} name="Flower"> Displays the buttons pressed each day. </Text>
                 <Text style={styles.tinyText} key={refreshChild} name="Triskelion"> Displays the number of button pairs pressed. </Text>
                 <Text style={styles.tinyText} key={refreshChild} name="ChessClock"> Displays the duration between the same button being pressed.</Text>
                 <Text style={styles.tinyText} key={refreshChild} name="ButtonPressedPerDay"> Displays the number of times each button was pressed each day </Text>
+                <Text style={styles.tinyText} key={refreshChild} name="Dandelion"> Displays the buttons pressed over a week. </Text>
               </GraphSwitch>
               <TouchableWithoutFeedback onPress={() => (setActiveComponent(currentGraph), AsyncCode.changeGraphType(currentGraph, RawData.Key), GLOBAL.ITEM.GraphType=currentGraph)}>
                 <Text style={styles.smallButton}> Change Graph Type </Text>
@@ -1323,7 +1334,6 @@ function GraphSettings({navigation}) {
 
   // sets the title
   const setTitle = async (text) =>{
-    let newName = true;
     if (text.length < 1) {
       setAlertText("No Graph Name");
       throwTitleAlert(true);
@@ -1334,7 +1344,6 @@ function GraphSettings({navigation}) {
     for(let i = 0; i < rawData.length; i++){
       console.log(rawData[i].Title);
       if(text == rawData[i].Title) {
-        newName = false;
         setAlertText("This graph name already exists");
         throwTitleAlert(true);
         console.log("Same Name");
@@ -1364,64 +1373,6 @@ function GraphSettings({navigation}) {
     throwSuccessAlert(true);
   }
 
-  //changes the search value and filters out points that do not match
-  const updateSearch= async() => {
-    let replaceData = [];
-    console.log(searchDate);
-    for(let i = 0; i < curData.length; i++) {
-      let buttonJson = {};
-      let buttonData = [];
-      buttonJson.ButtonName = curData[i].ButtonName;
-      for(let j = 0; j < curData[i].data.length; j++){
-        let matchSearch = false;
-        if(searchDate[0] != "") {
-          if(curData[i].data[j].Day == searchDate[0]) {
-            matchSearch = true;
-          }
-        }
-        if(searchDate[1] != "") {
-          if(curData[i].data[j].Month == searchDate[1]) {
-            matchSearch = true;
-          }
-        }
-        if(searchDate[2] != "") {
-          if(curData[i].data[j].Year == searchDate[2]) {
-            matchSearch = true;
-          }
-        }
-        if(matchSearch) {
-          buttonData.push(curData[i].data[j]);
-          console.log("Match Found: " + curData[i].data[j]);
-        }
-      }
-      buttonJson.data = buttonData;
-      replaceData.push(buttonJson);
-    }
-    if(searchDate[0] != "" || searchDate[1] != "" || searchDate[2] != "") {
-      setFilteredData(replaceData);
-    }
-    else {
-      setFilteredData(curData);
-    }
-  }
-
-  const addDataPointDescription= async(item,description) => {
-    console.log(item);
-    console.log(description);
-    if(description.length >= 1) {
-      setModalVisible(false);
-      setShowError(false);
-      let temp = AsyncCode.changeDataPointDescription(RawData.Key, item, description);
-      setCurData(temp.Data);
-      setFilteredData(temp.Data);
-      GLOBAL.ITEM = temp;
-      throwSuccessAlert(true);
-    }
-    else {
-      setShowError(true);
-    }
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -1432,8 +1383,6 @@ function GraphSettings({navigation}) {
           <Picker.Item label="Change Title" value="ChangeTitle" style={styles.pickerDropdown}/>
           <Picker.Item label="Change Description" value="ChangeDescription" style={styles.pickerDropdown}/>
           <Picker.Item label="Change Button Names" value="ChangeButtonNames" style={styles.pickerDropdown}/>
-          <Picker.Item label="Change Data Descriptions" value="ChangeDataDescriptions" style={styles.pickerDropdown}/>
-          <Picker.Item label="Delete Data" value="DeleteData" style={styles.pickerDropdown}/>
         </Picker>
 
         { whatToShow === '' ? (
@@ -1450,7 +1399,7 @@ function GraphSettings({navigation}) {
                   {graphOptions}
                 </Picker>
                 <GraphSwitch active={selectedOption}>
-                      {graphDescriptions}
+                  {graphDescriptions}
                 </GraphSwitch>
                 { selectedOption !== "NoDataYet" ?(
                   <TouchableWithoutFeedback onPress={() => (setActiveComponent(currentGraph), AsyncCode.changeGraphType(currentGraph,RawData.Key), GLOBAL.ITEM.GraphType=currentGraph)}>
@@ -1496,14 +1445,7 @@ function GraphSettings({navigation}) {
                     renderItem={({item})=>(
                       <View>
                         <Text style={styles.taskTitle}>{item.ButtonName}</Text>
-                        <TextInput
-                          numberOfLines={1}
-                          onChangeText={text => setTextValue1(text)}
-                          placeholder="New Button Name"
-                          style={styles.input}
-                          editable
-                          maxLength={100}
-                        />
+                        <TextInput numberOfLines={1} onChangeText={text => setTextValue1(text)} placeholder="New Button Name" style={styles.input} editable maxLength={100}/>
                         <TouchableWithoutFeedback onPress={()=>(setButtonName(textValue1,item.ButtonName))}>
                           <Text style={styles.smallButton}> Submit </Text>
                         </TouchableWithoutFeedback>
@@ -1512,129 +1454,7 @@ function GraphSettings({navigation}) {
                     keyExtractor={(item, index)=>index.toString()}
                   />
               </View>
-            ): whatToShow==='ChangeDataDescriptions' ? (
-              <View>{/* Add Data Descriptions*/}
-                <Text style={styles.header}> Change Data Description</Text>
-                <View style={styles.barLine}></View>
-                <Text style={styles.subheader}> Search </Text>
-                <View style={styles.fixToText}>
-                  <TextInput
-                    onChangeText={text => (searchDate[0]=text,updateSearch())}
-                    placeholder="Day"
-                    style={styles.dayInput}
-                    editable
-                    maxLength={2}
-                  />
-                  <TextInput
-                    onChangeText={text => (searchDate[1]=text,updateSearch())}
-                    placeholder="Month"
-                    style={styles.dayInput}
-                    editable
-                    maxLength={2}
-                  />
-                  <TextInput
-                    onChangeText={text => (searchDate[2]=text,updateSearch())}
-                    placeholder="Year"
-                    style={styles.dayInput}
-                    editable
-                    maxLength={4}
-                  />
-                </View>
-
-                <View style={styles.barLine}></View>
-
-                <SectionList
-                  sections={filteredData}
-                  renderItem={({item})=>(
-                    <View style={styles.barLine}>
-                    <View style={styles.fixToText}>
-                      <Text style={styles.tinyText}>{item.Day+"-"+item.Month+"-"+item.Year+", "+item.Hour+":"+item.Minutes+":"+item.Seconds}</Text>
-                      <TouchableWithoutFeedback onPress={()=>{setModalData(item),setModalVisible(true)}}>
-                        <Text style={styles.lightButton}> Add Description </Text>
-                      </TouchableWithoutFeedback>
-                    </View>
-                    </View>
-                  )}
-                  renderSectionHeader={({section})=>(
-                    <View>
-                      <Text style={styles.taskTitle}>{section.ButtonName}</Text>
-                    </View>
-                  )}
-                  keyExtractor={(item, index)=>index.toString()}
-                  stickySectionHeadersEnabled
-                />
-              </View>
-            ): whatToShow==='DeleteData' ? (
-              <View>{/* Delete Data */}
-                <Text style={styles.header}> Remove Data </Text>
-                <View style={styles.barLine}></View>
-                <Text style={styles.subheader}> Search </Text>
-                <View style={styles.fixToText}>
-                  <TextInput
-                    onChangeText={text => (searchDate[0]=text,updateSearch())}
-                    placeholder="Day"
-                    style={styles.dayInput}
-                    editable
-                    maxLength={2}
-                  />
-                  <TextInput
-                    onChangeText={text => (searchDate[1]=text,updateSearch())}
-                    placeholder="Month"
-                    style={styles.dayInput}
-                    editable
-                    maxLength={2}
-                  />
-                  <TextInput
-                    onChangeText={text => (searchDate[2]=text,updateSearch())}
-                    placeholder="Year"
-                    style={styles.dayInput}
-                    editable
-                    maxLength={4}
-                  />
-                </View>
-
-                <View style={styles.barLine}></View>
-
-                <SectionList
-                  sections={filteredData}
-                  renderItem={({item})=>(
-                    <View style={styles.barLine}>
-                    <View style={styles.fixToText}>
-                      <Text style={styles.tinyText}>{item.Day+"-"+item.Month+"-"+item.Year+", "+item.Hour+":"+item.Minutes+":"+item.Seconds}</Text>
-                      <TouchableWithoutFeedback onPress={()=>{throwAlert(item)}}>
-                        <Text style={styles.deleteButton}> Delete </Text>
-                      </TouchableWithoutFeedback>
-                    </View>
-                    </View>
-                  )}
-                  renderSectionHeader={({section})=>(
-                    <View>
-                      <Text style={styles.taskTitle}>{section.ButtonName}</Text>
-                    </View>
-                  )}
-                  keyExtractor={(item, index)=>index.toString()}
-                  stickySectionHeadersEnabled
-                />
-              </View>
             ): null}
-
-        <AwesomeAlert
-          show={showAlert}
-          showProgress={false}
-          title="Delete Data"
-          message= {"Are you sure you want to delete this data point?"}
-          closeOnTouchOutside={true}
-          closeOnHardwareBackPress={false}
-          showCancelButton={true}
-          showConfirmButton={true}
-          confirmText="Delete"
-          confirmButtonColor="#E07A5F"
-          contentContainerStyle={styles.alert}
-          messageStyle={styles.alertBody}
-          titleStyle={styles.alertText}
-          onConfirmPressed={() => { doDeleteThisPoint(); }}
-          onCancelPressed={()=> { throwAlert(null); }}
-        />
         
         <AwesomeAlert
           show={alertSuccess}
@@ -1669,50 +1489,228 @@ function GraphSettings({navigation}) {
           onConfirmPressed={() => { throwTitleAlert(false); }}
           onCancelPressed={()=> { throwTitleAlert(false); }}
         />
-        
-        <Modal animationType="Slide" transparent={true} visible={modalVisible} onRequestClose={() => { Alert.alert("Modal has been closed."); {/*setModalVisible(false);*/} }}>
-          <View style={styles.modalBox}>
-            <Text style={styles.header}> {modalData.Day + "-" + modalData.Month + "-" + modalData.Year + ", " + modalData.Hour + ":" + modalData.Minutes + ":" + modalData.Seconds} </Text>
-            <Text style={styles.subheader}> Change Description </Text>
-            {showError ? ( 
-              <Text style={styles.regularText}> Please add a description</Text> 
-            ): null}
-            
-            <TextInput
-              multiline
-              numberOfLines={5}
-              onChangeText={text => setDataPointValue(text)}
-              placeholder="New Description Here"
-              style={styles.input}
-              editable
-              maxLength={5000}
-            />
-
-            <View style={styles.fixToText}>
-              <TouchableWithoutFeedback onPress={()=>(addDataPointDescription(modalData,dataPointValue))}>
-                <Text style={styles.smallButton}> Submit </Text>
-              </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback onPress={()=>(setModalVisible(false))}>
-                <Text style={styles.warningButton}> Cancel </Text>
-              </TouchableWithoutFeedback>
-            </View>
-          </View>
-        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 function EditData({navigation}) {
+  const [RawData, setRawData] = useState({});
+  const [curData, setCurData] = useState([
+    { ButtonName:"Button0", data:[0] },
+    { ButtonName:"Button1", data:[0,1] },
+    { ButtonName:"Button2", data:[0,1,2] },
+  ]); 
+  const [filteredData,setFilteredData] = useState([
+    { ButtonName:"Button0", data:[0] },
+    { ButtonName:"Button1", data:[0,1] },
+    { ButtonName:"Button2", data:[0,1,2] },
+  ]);
+
+  const [showError, setShowError] = useState(false);
+  const [showAlert, setAlert] = useState(false);
+  const [alertSuccess, throwSuccessAlert] = useState(false);
+
+  const [dataOnTrial, setTrial] = useState({});
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalData, setModalData] = useState({});
+  const [dataPointValue, setDataPointValue] = useState("");
+
+  let searchDate = ["","",""];
+
+  // Used to save the data to asnyc when the page is left
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {});
+    return unsubscribe;
+  }, [navigation]);
+
+  // Stuff done on page load.
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', (e) => {
+      changeData(GLOBAL.ITEM);
+      setCurData(GLOBAL.ITEM.Data);
+      setFilteredData(GLOBAL.ITEM.Data);
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  // changes the rawData
+  // params data is the data the raw data will be set too
+  const changeData = (data) => {
+    setRawData(data);
+  }
+
+  // flags a point to be deleted
+  const doDeleteThisPoint = () => {
+    let temp = AsyncCode.removeDataPoint(RawData.Key, dataOnTrial);
+    //console.log(temp.Data);
+    throwAlert(null);
+    changeData(temp);
+    setCurData(temp.Data);
+    setFilteredData(temp.Data);
+    GLOBAL.ITEM = temp;
+    GLOBAL.BUTTONPRESSED = true;
+  }
+
+  // this throws the Alert
+  const throwAlert = (item) => {
+    setTrial(item);
+    if(showAlert) {
+      setAlert(false);
+    }
+    else {
+      setAlert(true);
+    }
+  };
+
+  const updateSearch= async() => {
+    let replaceData = [];
+    console.log(searchDate);
+    for(let i = 0; i < curData.length; i++) {
+      let buttonJson = {};
+      let buttonData = [];
+      buttonJson.ButtonName = curData[i].ButtonName;
+      for(let j = 0; j < curData[i].data.length; j++){
+        let matchSearch = false;
+        if(searchDate[0] != "") {
+          if(curData[i].data[j].Day == searchDate[0]) {
+            matchSearch = true;
+          }
+        }
+        if(searchDate[1] != "") {
+          if(curData[i].data[j].Month == searchDate[1]) {
+            matchSearch = true;
+          }
+        }
+        if(searchDate[2] != "") {
+          if(curData[i].data[j].Year == searchDate[2]) {
+            matchSearch = true;
+          }
+        }
+        if(matchSearch) {
+          buttonData.push(curData[i].data[j]);
+          console.log("Match Found: " + curData[i].data[j]);
+        }
+      }
+      buttonJson.data = buttonData;
+      replaceData.push(buttonJson);
+    }
+    if(searchDate[0] != "" || searchDate[1] != "" || searchDate[2] != "") {
+      setFilteredData(replaceData);
+    }
+    else {
+      setFilteredData(curData);
+    }
+  }
+
+  const addDataPointDescription= async(item, description) => {
+    console.log(item);
+    console.log(description);
+    if(description.length >= 1) {
+      setModalVisible(false);
+      setShowError(false);
+      let temp = AsyncCode.changeDataPointDescription(RawData.Key, item, description);
+      setCurData(temp.Data);
+      setFilteredData(temp.Data);
+      GLOBAL.ITEM = temp;
+      throwSuccessAlert(true);
+    }
+    else {
+      setShowError(true);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View>
           <Text style={styles.title}> Edit Data </Text>
-          <View style={styles.barLine}/>
-        </View>
+          <Text style={styles.subheader}> Date Filter </Text>
+          <View style={styles.fixToText}>
+            <TextInput onChangeText={text => (searchDate[0] = text, updateSearch())} placeholder="Day" style={styles.dayInput} editable maxLength={2}/>
+            <TextInput onChangeText={text => (searchDate[1] = text, updateSearch())} placeholder="Month" style={styles.dayInput} editable maxLength={2}/>
+            <TextInput onChangeText={text => (searchDate[2] = text, updateSearch())} placeholder="Year" style={styles.dayInput} editable maxLength={4}/>
+          </View>
+          <View style={styles.barLine}></View>
+
+          <SectionList
+            sections={filteredData}
+            renderItem={({item}) => (
+              <View style={styles.barLine}>
+              <View style={styles.fixToText}>
+                <Text style={styles.tinyText}> {item.Day + "-" + item.Month + "-" + item.Year + ", " + String(item.Hour).padStart(2, "0") + ":" + String(item.Minutes).padStart(2, "0") + ":" + String(item.Seconds).padStart(2, "0")} </Text>
+                <TouchableWithoutFeedback onPress={() => {setModalData(item), setModalVisible(true)}}>
+                  <Text style={styles.lightButton}> Add Description </Text>
+                </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback onPress={() => {throwAlert(item)}}>
+                  <Text style={styles.warningButton}> Delete </Text>
+                </TouchableWithoutFeedback>
+              </View>
+              </View>
+            )}
+            renderSectionHeader={({section}) => (
+              <View>
+                <Text style={styles.taskTitle}> {section.ButtonName} </Text>
+              </View>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+            stickySectionHeadersEnabled
+          />
+          
+          <AwesomeAlert
+            show={showAlert}
+            showProgress={false}
+            title="Delete Data"
+            message= {"Are you sure you want to delete this data point?"}
+            closeOnTouchOutside={true}
+            closeOnHardwareBackPress={false}
+            showCancelButton={true}
+            showConfirmButton={true}
+            confirmText="Delete"
+            confirmButtonColor="#E07A5F"
+            contentContainerStyle={styles.alert}
+            messageStyle={styles.alertBody}
+            titleStyle={styles.alertText}
+            onConfirmPressed={() => { doDeleteThisPoint(); }}
+            onCancelPressed={()=> { throwAlert(null); }}
+          />
         
+          <AwesomeAlert
+            show={alertSuccess}
+            showProgress={false}
+            title="Success"
+            message= {"Graph Changed"}
+            closeOnTouchOutside={true}
+            closeOnHardwareBackPress={false}
+            showCancelButton={false}
+            showConfirmButton={true}
+            confirmText="Okay"
+            confirmButtonColor="#E07A5F"
+            contentContainerStyle={styles.alert}
+            messageStyle={styles.alertBody}
+            titleStyle={styles.alertText}
+            onConfirmPressed={() => { throwSuccessAlert(false); }}
+          />
+
+          <Modal animationType="Slide" transparent={true} visible={modalVisible} onRequestClose={() => { Alert.alert("Modal has been closed."); {/*setModalVisible(false);*/} }}>
+            <View style={styles.modalBox}>
+              <Text style={styles.header}> {modalData.Day + "-" + modalData.Month + "-" + modalData.Year + ", " + modalData.Hour + ":" + modalData.Minutes + ":" + modalData.Seconds} </Text>
+              <Text style={styles.subheader}> Change Description </Text>
+              {showError ? ( <Text style={styles.regularText}> Please add a description</Text> ): null}
+              
+              <TextInput multiline numberOfLines={5} onChangeText={text => setDataPointValue(text)} placeholder="New Description Here" style={styles.input} editable maxLength={5000}/>
+
+              <View style={styles.fixToText}>
+                <TouchableWithoutFeedback onPress={() => (addDataPointDescription(modalData, dataPointValue))}>
+                  <Text style={styles.smallButton}> Submit </Text>
+                </TouchableWithoutFeedback>
+                <TouchableWithoutFeedback onPress={() => (setModalVisible(false))}>
+                  <Text style={styles.warningButton}> Cancel </Text>
+                </TouchableWithoutFeedback>
+              </View>
+            </View>
+          </Modal>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

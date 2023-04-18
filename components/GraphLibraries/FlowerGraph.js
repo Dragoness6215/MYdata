@@ -14,62 +14,63 @@ import AwesomeAlert from 'react-native-awesome-alerts';
 
 export default class FlowerGraph extends React.Component {
 
-    // State of the class, data stored in here
-    // @param: props, the props passed in from the the parent class
-    constructor(props) {
-        super(props);
-        this.state = {
-            isLoading: true,
-            numberOfDays:0,
-            endDate:new Date("2017-04-01"),
-            title:"Whatever you want",
-            graphData: [
-            ],
-            tableHead: [' Column 1', ' Column 2',],
-            tableData: [
-            ['row 1', 'row 1',],
-            ['row 2', 'row 2',],
-            ],
-        }
+  // State of the class, data stored in here
+  // @param: props, the props passed in from the the parent class
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLoading: true,
+      numberOfDays:0,
+      endDate:new Date("2017-04-01"),
+      title:"Whatever you want",
+      graphData: [],
+      tableHead: [' Column 1', ' Column 2',],
+      tableData: [
+      ['row 1', 'row 1',],
+      ['row 2', 'row 2',],
+      ],
     }
+  }
 
-    toBig=false;
-    previousProps;
-    // when passed in json changes, this is called
-    // updates the state for the graph
-    componentDidUpdate(prevProps, prevState) {
-      if (prevProps !== this.props || this.state.isLoading) {
-        let tempGraphData=this.DataProcessing(this.props.rawData);
-        let newTableData=this.ChangeTableData(tempGraphData);
-        this.setState({
-          isLoading:false,
-          graphData:tempGraphData,
-          tableData:newTableData,
-          title:this.props.rawData.Title,
-        });
-        this.previousProps=this.props;
-      }
-    }
+  descriptionList=[];
 
-
-    // called on load
-    componentDidMount(){
-      let tempGraphData=this.DataProcessing(GLOBAL.ITEM);
+  toBig=false;
+  previousProps;
+  // when passed in json changes, this is called
+  // updates the state for the graph
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps !== this.props || this.state.isLoading) {
+      let tempGraphData=this.DataProcessing(this.props.rawData);
       let newTableData=this.ChangeTableData(tempGraphData);
       this.setState({
         isLoading:false,
         graphData:tempGraphData,
         tableData:newTableData,
-        title:GLOBAL.ITEM.Title,
+        title:this.props.rawData.Title,
       });
+      this.previousProps=this.props;
     }
+  }
 
-    // used to manually reload the state
-    updateData(){
-        this.setState({
-          isLoading:true,
-        });
-    }
+
+  // called on load
+  componentDidMount(){
+    let tempGraphData=this.DataProcessing(GLOBAL.ITEM);
+    let newTableData=this.ChangeTableData(tempGraphData);
+    this.setState({
+      isLoading:false,
+      graphData:tempGraphData,
+      tableData:newTableData,
+      title:GLOBAL.ITEM.Title,
+    });
+  }
+
+  // used to manually reload the state
+  updateData(){
+      this.setState({
+        isLoading:true,
+      });
+  }
 
   //Changes TableData for BarGraph
   ChangeTableData = (tempData) => {
@@ -80,112 +81,110 @@ export default class FlowerGraph extends React.Component {
       tableDataClone.push(temp);
     }
     return tableDataClone;
-}
+  }
 
-descriptionList=[];
+  DataProcessing = (rawJson) => {
+    let parsedJson=[];
+    let dataArray = rawJson.Data;
+    let singleArray=[];
+    this.descriptionList=[];
+    for(let i = 0 ; i < dataArray.length;i++){
+      for(let j=0; j<dataArray[i].data.length;j++){
+        singleArray.push(this.reformatToCorrect(dataArray[i],i,j));
+        if(dataArray[i].data[j].Description!=undefined){
+          let temp=(this.reformatToCorrect(dataArray[i],i,j));
+          temp.Description=dataArray[i].data[j].Description;
+          this.descriptionList.push(temp);
+        }
+      }
+    };
+    if(singleArray.length>250){
+      console.log("Way too big: "+singleArray.length);
+      this.toBig=true;
+      this.quickSort(singleArray, 0 ,(singleArray.length-1));
 
-  DataProcessing = (rawJson) =>{
-        let parsedJson=[];
-        let dataArray = rawJson.Data;
-        let singleArray=[];
-        this.descriptionList=[];
-        for(let i = 0 ; i < dataArray.length;i++){
-          for(let j=0; j<dataArray[i].data.length;j++){
-            singleArray.push(this.reformatToCorrect(dataArray[i],i,j));
-            if(dataArray[i].data[j].Description!=undefined){
-              let temp=(this.reformatToCorrect(dataArray[i],i,j));
-              temp.Description=dataArray[i].data[j].Description;
-              this.descriptionList.push(temp);
-            }
-          }
-        };
-        if(singleArray.length>250){
-          console.log("Way too big: "+singleArray.length);
-          this.toBig=true;
-          this.quickSort(singleArray, 0 ,(singleArray.length-1));
+      let dayArray = [];
+      let allDays=[];
+      let lastDay=new Date(singleArray[0].data);
+      let tempDate;
 
-          let dayArray = [];
-          let allDays=[];
-          let lastDay=new Date(singleArray[0].data);
-          let tempDate;
-
-          for (let i = 0; i<125; i++ ){
-            tempDate = new Date(singleArray[i].data);
-            if(tempDate.getDate()!==lastDay.getDate()){
-              let temp = {
-                title:lastDay,
-                data:dayArray,
-              };
-              allDays.push(temp);
-              dayArray=[];
-              dayArray.push(singleArray[i]);
-              lastDay=tempDate;
-            }
-            else{
-              dayArray.push(singleArray[i]);
-            }
-          }
+      for (let i = 0; i<125; i++ ){
+        tempDate = new Date(singleArray[i].data);
+        if(tempDate.getDate()!==lastDay.getDate()){
           let temp = {
-            title:tempDate,
+            title:lastDay,
             data:dayArray,
           };
           allDays.push(temp);
-
-          for (let i = singleArray.length-125; i<singleArray.length; i++ ){
-            tempDate = new Date(singleArray[i].data);
-            if(tempDate.getDate()!==lastDay.getDate()){
-              let temp = {
-                title:lastDay,
-                data:dayArray,
-              };
-              allDays.push(temp);
-              dayArray=[];
-              dayArray.push(singleArray[i]);
-              lastDay=tempDate;
-            }
-            else{
-              dayArray.push(singleArray[i]);
-            }
-          }
-          let temp1 = {
-            title:tempDate,
-            data:dayArray,
-          };
-          allDays.push(temp1);
-          return allDays;
+          dayArray=[];
+          dayArray.push(singleArray[i]);
+          lastDay=tempDate;
         }
-        else if(singleArray.length>0){
-          this.quickSort(singleArray, 0 ,(singleArray.length-1));
+        else{
+          dayArray.push(singleArray[i]);
+        }
+      }
+      let temp = {
+        title:tempDate,
+        data:dayArray,
+      };
+      allDays.push(temp);
 
-          let dayArray = [];
-          let allDays=[];
-          let lastDay=new Date(singleArray[0].data);
-          let tempDate;
-
-          for (let i = 0; i<singleArray.length; i++ ){
-            tempDate = new Date(singleArray[i].data);
-            if(tempDate.getDate()!==lastDay.getDate()){
-              let temp = {
-                title:lastDay,
-                data:dayArray,
-              };
-              allDays.push(temp);
-              dayArray=[];
-              dayArray.push(singleArray[i]);
-              lastDay=tempDate;
-            }
-            else{
-              dayArray.push(singleArray[i]);
-            }
-          }
+      for (let i = singleArray.length-125; i<singleArray.length; i++ ){
+        tempDate = new Date(singleArray[i].data);
+        if(tempDate.getDate()!==lastDay.getDate()){
           let temp = {
-            title:tempDate,
+            title:lastDay,
             data:dayArray,
           };
           allDays.push(temp);
-          return allDays;
+          dayArray=[];
+          dayArray.push(singleArray[i]);
+          lastDay=tempDate;
         }
-        return [];
+        else{
+          dayArray.push(singleArray[i]);
+        }
+      }
+      let temp1 = {
+        title:tempDate,
+        data:dayArray,
+      };
+      allDays.push(temp1);
+      return allDays;
+    }
+    else if(singleArray.length>0){
+      this.quickSort(singleArray, 0 ,(singleArray.length-1));
+
+      let dayArray = [];
+      let allDays=[];
+      let lastDay=new Date(singleArray[0].data);
+      let tempDate;
+
+      for (let i = 0; i<singleArray.length; i++ ){
+        tempDate = new Date(singleArray[i].data);
+        if(tempDate.getDate()!==lastDay.getDate()){
+          let temp = {
+            title:lastDay,
+            data:dayArray,
+          };
+          allDays.push(temp);
+          dayArray=[];
+          dayArray.push(singleArray[i]);
+          lastDay=tempDate;
+        }
+        else{
+          dayArray.push(singleArray[i]);
+        }
+      }
+      let temp = {
+        title:tempDate,
+        data:dayArray,
+      };
+      allDays.push(temp);
+      return allDays;
+    }
+    return [];
   }
 
   reformatToCorrect=(rawJson,i,j)=>{
@@ -292,43 +291,42 @@ descriptionList=[];
   render() {
     return (
       <View style={this.props.styles.container}>
-          <View>
+        <View>
           {this.toBig ? (
             <Text style={this.props.styles.subheader}> Data set is too big, so only some is displayed.</Text>
           ): null }
-            <View style={this.props.styles.border}>
-                <GetFlowers data={this.state.graphData} styles={this.props.styles} pressHandler={this.onDayPressed}></GetFlowers>
-            </View>
-            <Text style={this.props.styles.regularText}> Press on the flowers to see more information </Text>
+          <View style={this.props.styles.border}>
+            <GetFlowers data={this.state.graphData} styles={this.props.styles} pressHandler={this.onDayPressed}></GetFlowers>
           </View>
-          {this.descriptionList.length >0 ? (
-                <View style={this.props.styles.container}>
-                <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-                    <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-                    <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-                </Table>
-              </View>
-              ): null}
-          <AwesomeAlert
-            show={this.state.showAlert}
-            showProgress={false}
-            title={this.selectedDate}
-            message= {this.dataToTable(this.selectedData)}
-            closeOnTouchOutside={true}
-            closeOnHardwareBackPress={false}
-            showCancelButton={false}
-            showConfirmButton={true}
-            confirmText="Okay"
-            confirmButtonColor="#63ba83"
-            contentContainerStyle={this.props.styles.alert}
-            messageStyle={this.props.styles.alertBody}
-            titleStyle={this.props.styles.alertText}
-            onConfirmPressed={() => {
-              this.setState({showAlert:false});
-          }}/>
+          <Text style={this.props.styles.regularText}> Press on the flowers to see more information </Text>
+        </View>
+        {this.descriptionList.length >0 ? (
+              <View style={this.props.styles.container}>
+              <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
+                  <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
+                  <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
+              </Table>
+            </View>
+            ): null}
+        
+        <AwesomeAlert
+          show={this.state.showAlert}
+          showProgress={false}
+          title={this.selectedDate}
+          message= {this.dataToTable(this.selectedData)}
+          closeOnTouchOutside={true}
+          closeOnHardwareBackPress={false}
+          showCancelButton={false}
+          showConfirmButton={true}
+          confirmText="Okay"
+          confirmButtonColor="#63ba83"
+          contentContainerStyle={this.props.styles.alert}
+          messageStyle={this.props.styles.alertBody}
+          titleStyle={this.props.styles.alertText}
+          onConfirmPressed={() => { this.setState({showAlert:false}); }}/>
       </View>
     );
-}
+  }
 }
 
 let dark="#343434";
