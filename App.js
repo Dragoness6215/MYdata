@@ -1,8 +1,8 @@
 // React Native Imports
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { LogBox, Text, View, FlatList, TouchableWithoutFeedback, TouchableOpacity, ScrollView, StyleSheet, Image, NativeModules, NativeEventEmitter, SectionList, TextInput, Appearance, Dimensions, Linking, Modal } from 'react-native';
+import { ImageBackground, LogBox, Text, View, FlatList, TouchableWithoutFeedback, TouchableOpacity, ScrollView, StyleSheet, Image, NativeModules, NativeEventEmitter, SectionList, TextInput, Appearance, Dimensions, Linking, Modal } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { PermissionsAndroid, Platform } from "react-native";
+import { PermissionsAndroid, Platform, BackHandler } from "react-native";
 
 import {ImageResizeMode} from 'react-native/Libraries/Image/ImageResizeMode'
 
@@ -45,16 +45,16 @@ let styles=lightStyles;
 
 //used to add new graphs
 // graphOptions is the list of graphs that can be selected
-const graphOptions =[
+const graphOptions = [
   <Picker.Item label="Set Graph Type" value="NoDataYet" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Bar Graph" value="BarGraph" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Heat Map" value="HeatMap" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Button Order" value="ButtonOrderGraph" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Times Buttons Were Pressed Each Day" value="TimesPerDay" style={styles.pickerDropdown}/>,
+  <Picker.Item label="Bar Graph" value="Bar Graph" style={styles.pickerDropdown}/>,
+  <Picker.Item label="Heat Map" value="Heat Map" style={styles.pickerDropdown}/>,
+  <Picker.Item label="Button Order" value="Button Order" style={styles.pickerDropdown}/>,
+  <Picker.Item label="Timeline" value="Timeline" style={styles.pickerDropdown}/>,
   <Picker.Item label="Flowers" value="Flower" style={styles.pickerDropdown} />,
-  <Picker.Item label="Knot" value="Triskelion" style={styles.pickerDropdown} />,
-  <Picker.Item label="Chess Clock" value="ChessClock" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Total Buttons Pressed per Day" value="ButtonPressedPerDay" style={styles.pickerDropdown}/>,
+  <Picker.Item label="Triskelion" value="Triskelion" style={styles.pickerDropdown} />,
+  <Picker.Item label="Chess Clock" value="Chess Clock" style={styles.pickerDropdown}/>,
+  <Picker.Item label="Stock Market" value="Stock Market" style={styles.pickerDropdown}/>,
   <Picker.Item label="Dandelion" value="Dandelion" style={styles.pickerDropdown} />,
 ]
 
@@ -63,15 +63,73 @@ const graphDescriptions = [
   <Text style={styles.tinyText} name="NoDataYet"> No Graph Selected. </Text>,
   <Text style={styles.tinyText} name="BarGraph"> Displays the number of times each button is pressed. </Text>,
   <Text style={styles.tinyText} name="HeatMap"> Displays the number of times all buttons are pressed for each day. </Text>,
-  <Text style={styles.tinyText} name="ButtonOrderGraph"> Displays the order of button pushes. </Text>,
-  <Text style={styles.tinyText} name="TimesPerDay"> Displays when buttons are pressed each day.</Text>,
-  <Text style={styles.tinyText} name="Flower"> Displays the buttons pressed each day. </Text>,
+  <Text style={styles.tinyText} name="ButtonOrder"> Displays the order of button pushes. </Text>,
+  <Text style={styles.tinyText} name="Timeline"> Displays when buttons are pressed each day.</Text>,
+  <Text style={styles.tinyText} name="Flowers"> Displays the buttons pressed each day. </Text>,
   <Text style={styles.tinyText} name="Triskelion"> Displays the number of button pairs pressed. </Text>,
   <Text style={styles.tinyText} name="ChessClock"> Displays the duration between the same button being pressed.</Text>,
-  <Text style={styles.tinyText} name="ButtonPressedPerDay"> Displays the number of times each button was pressed each day </Text>,
+  <Text style={styles.tinyText} name="StockMarket"> Displays the number of times each button was pressed each day </Text>,
   <Text style={styles.tinyText} name="Dandelion"> Displays the buttons pressed over a week. </Text>,
 ]
 // DON'T FORGET TO ADD TO GRAPHSWITCH IN GRAPHS AS WELL
+
+//Temporary list to test dynamically generating graph library display
+const graphLibrary = [
+  {
+    key: 0,
+    name: "Bar Graph",
+    image: require('./assets/BarGraph.png'),
+    description: "Displays the number of times each button is pressed."
+  },
+  {
+    key: 1,
+    name: "Button Order",
+    image: require('./assets/ButtonOrder.png'),
+    description: "Displays the order of button pushes."
+  },
+  {
+    key: 2,
+    name: "Chess Clock",
+    image: require('./assets/ChessClock.png'),
+    description: "Displays the duration between the same button being pressed."
+  },
+  {
+    key: 3,
+    name: "Dandelion",
+    image: require('./assets/Dandelion.png'),
+    description: "Displays the buttons pressed, separated by days."
+  },
+  {
+    key: 4,
+    name: "Flowers",
+    image: require('./assets/Flowers.png'),
+    description: "Displays the buttons pressed each day."
+  },
+  {
+    key: 5,
+    name: "Heat Map",
+    image: require('./assets/HeatMap.png'),
+    description: "Displays the number of times all buttons are pressed for each day."
+  },
+  {
+    key: 6,
+    name: "Stock Market",
+    image: require('./assets/TotalButtons.png'),
+    description: "Displays the number of times each button was pressed each day"
+  },
+  {
+    key: 7,
+    name: "Timeline",
+    image: require('./assets/Timeline.png'),
+    description: "Displays when buttons are pressed each day."
+  },
+  {
+    key: 8,
+    name: "Triskelion",
+    image: require('./assets/Knot.png'),
+    description: "Displays the number of button pairs pressed."
+  },
+]
 
 // Manages pages and recalls the order
 const Stack = createNativeStackNavigator();
@@ -119,7 +177,7 @@ export default class App extends React.Component {
   // signals to load the fonts
   //Uncomment AsyncCode.addBigData() to add a large procedurally generated data set
   componentDidMount() {
-    AsyncCode.addBigData();
+    // AsyncCode.addBigData();
     LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
     this.getStuff();
     BleCode.checkPermissions();
@@ -133,7 +191,7 @@ export default class App extends React.Component {
           <Stack.Screen name="Home"           component={HomeScreen}      options={backgroundDefault}/>
           <Stack.Screen name="Graph Library"  component={GraphLibrary}    options={backgroundDefault}/>
           <Stack.Screen name="My Graphs"      component={SelectData}      options={backgroundDefault}/>
-          <Stack.Screen name="New Graph"      component={NewGraph}        options={backgroundDefault}/>
+          <Stack.Screen name="New Graph"      component={NewGraph}        options={backgroundDefault} initialParams={{ typeParam: null }}/>
           <Stack.Screen name="Settings"       component={Settings}        options={backgroundDefault}/>
           <Stack.Screen name="Select Device"  component={SelectDevice}    options={backgroundDefault}/>
           <Stack.Screen name="Data Inputs"    component={ButtonSelection} options={backgroundDefault}/>
@@ -204,6 +262,10 @@ function HomeScreen({navigation}) {
   return (
     <View style={styles.container}>
       <ImageSwitch styles={styles}/>
+        {/* <ImageBackground  //controls the graph displayed in the background, future implementation: randomize graph that is displayed
+          style={styles.backgroundImage}
+          source={require('./assets/buttonbackground.png')}
+        > */}
         <View style={styles.bottomLine}></View>
         <View>
           <TouchableWithoutFeedback onPress={() => navigation.navigate('My Graphs')}>
@@ -220,6 +282,7 @@ function HomeScreen({navigation}) {
               <Text style={styles.button}>Settings</Text>
           </TouchableWithoutFeedback>
         </View>*/}
+      {/* </ImageBackground> */}
     </View>
   );
 }
@@ -549,6 +612,39 @@ function ButtonSelection({ navigation }) {
 
 function GraphLibrary({navigation}) {
   //Code to display all the various graphs that can be selected
+  const [alertText, setAlertText] = useState();
+  const [alertTitle, setAlertTitle] = useState();
+  const [alertImage, setAlertImage] = useState();
+  const [alert, throwAlert] = useState(false);
+  const [alertConfirm, throwAlertConfirm] = useState(false);
+
+  const [graphType, setGraphType] = useState();
+
+  const showAlert = (graph) => {
+    setGraphType(graph.name);
+    setAlertTitle(graph.name);
+    setAlertText(graph.description);
+    setAlertImage(graph.image);
+    throwAlert(true);
+  }
+
+  const toNewGraph = () => {
+    throwAlertConfirm(false); 
+    throwAlert(false);
+    navigation.navigate("New Graph", { typeParam: graphType });
+  }
+
+  const customAlert = () => {
+    return (
+      <View>
+        <Image
+          source={alertImage}
+          style={styles.graphIconBig}
+        />
+        <Text style={styles.alertBody}> {alertText} </Text>
+      </View>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -556,7 +652,55 @@ function GraphLibrary({navigation}) {
         <View>
           <Text style={styles.title}> Graph Library </Text>
           <View style={styles.barLine}/>
+          <View style={styles.fixToText}>
+            {graphLibrary.map((graph, key) => {
+              return (
+                <View>
+                  <TouchableWithoutFeedback onPress={() => showAlert(graph)}>
+                    <Image source={graph.image} style={styles.graphIcon}/>
+                  </TouchableWithoutFeedback>
+                  <Text style={styles.regularText}> {graph.name} </Text>
+                </View>
+              );
+            })}
+          </View>
         </View>
+
+        <AwesomeAlert
+          show={alert}
+          title={alertTitle}
+          closeOnTouchOutside={true}
+          closeOnHardwareBackPress={false}
+          showCancelButton={false}
+          showConfirmButton={true}
+          confirmText={"Use This Graph"}
+          confirmButtonColor="#63ba83"
+          contentContainerStyle={styles.alert}
+          titleStyle={styles.alertText}
+          customView={ customAlert() }
+          onConfirmPressed={() => { throwAlertConfirm(true); }}
+          onDismiss={() => { throwAlert(false); }}
+        />
+
+        <AwesomeAlert
+          show = {alertConfirm}
+          showProgress = {false}
+          title = "Confirm Submission"
+          message= "Do You Want to Make a New Graph of This Type?"
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={true}
+          showConfirmButton={true}
+          showCancelButton={true}
+          confirmButtonColor="#63ba83"
+          cancelButtonColor="#E07A5F"
+          confirmText="Confirm"
+          cancelText="Cancel"
+          contentContainerStyle={styles.alert}
+          messageStyle={styles.alertBody}
+          titleStyle={styles.alertText}
+          onConfirmPressed= {() => { toNewGraph(); }}
+          onCancelPressed= {()=> { throwAlertConfirm(false); }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -736,13 +880,15 @@ function SelectData({navigation}) {
 
 //New Graph Screen Code
 
-function NewGraph({ navigation }) {
+function NewGraph({ route, navigation }) {
   //Updates variables with entered data
-  const [name, setName] = useState('');
-  const [desc, setDesc] = useState('');
-  const [butt0, setButt0] = useState('');
-  const [butt1, setButt1] = useState('');
-  const [butt2, setButt2] = useState('');
+  const {typeParam} = route.params;
+  const [name, setName] = useState("");
+  const [desc, setDesc] = useState("");
+  const [type, setType] = useState(typeParam);
+  const [butt0, setButt0] = useState("Button 0");
+  const [butt1, setButt1] = useState("Button 1");
+  const [butt2, setButt2] = useState("Button 2");
 
   //States for the alerts
   const [alertText, setAlertText] = useState("");
@@ -750,11 +896,6 @@ function NewGraph({ navigation }) {
   const [alertConfirm, throwAlertConfirm] = useState(false);
 
   const [thisState, setThisState]= useState({textArray: [], showAlert:false});
-  let TempData = { Data:[
-    {ButtonName:"Button 0", data:[]},
-    {ButtonName:"Button 1", data:[]},
-    {ButtonName:"Button 2", data:[]},
-  ]};
   
   //On load, restore data from storage
   React.useEffect(() => {
@@ -772,30 +913,38 @@ function NewGraph({ navigation }) {
   }
 
   //Checks if the entered title is valid
-  const checkGraph = (title) => {
-    if(title.length < 1) {
+  const checkGraph = () => {
+    if(!name) {
       setAlertText("Please Enter A Graph Title");
       throwAlert(true);
       console.log("No Name");
       return;
     }
     
-    for(let i = 0; i < thisState.textArray.length; i++) {
+    if (!type) {
+      setAlertText("Please Select A Graph Type");
+      throwAlert(true);
+      console.log("No Type");
+      return;
+    }
+    
+    for (let i = 0; i < thisState.textArray.length; i++) {
       console.log(thisState.textArray[i].Title);
-      if(title == thisState.textArray[i].Title) {
+      if(name == thisState.textArray[i].Title) {
         setAlertText("Graph Title Already In Use");
         throwAlert(true);
         console.log("Same Name");
         return;
       }
     }
-    setAlertText("Are All Fields Correct?");
+    
     throwAlertConfirm(true);
   }
 
   //Adds the new graph to storage and sends user back to graph list
-  const addGraph = (title, desc, butt0, butt1, butt2) => {
-    AsyncCode.submitHandler(title, desc, butt0, butt1, butt2);
+  const addGraph = () => {
+    let buttons = [butt0, butt1, butt2];
+    AsyncCode.submitHandler(name, desc, type, buttons);
     updateData();
     navigation.navigate('My Graphs');
   }
@@ -818,31 +967,20 @@ function NewGraph({ navigation }) {
             <TextInput multiline numberOfLines={4} placeholder="Graph Description" style={styles.input} onChangeText={setDesc} value={desc} editable maxLength={1000}/>
           </View>
 
+          <Text style={styles.subheader}> Graph Type </Text>
+          <Picker style={styles.picker} selectedValue={type} mode="dropdown" onValueChange={(item) => (setType(item))}>
+            {graphOptions}
+          </Picker>
+
           <Text style={styles.subheader}> Button Names </Text>
           <View>
-            <TextInput multiline numberOfLines={1} default={TempData.Data[0].ButtonName} style={styles.input} onChangeText={setButt0} value={butt0} editable maxLength={50}/>
-            <TextInput multiline numberOfLines={1} default={TempData.Data[1].ButtonName} style={styles.input} onChangeText={setButt1} value={butt1} editable maxLength={50}/>
-            <TextInput multiline numberOfLines={1} default={TempData.Data[2].ButtonName} style={styles.input} onChangeText={setButt2} value={butt2} editable maxLength={50}/>
+            <TextInput multiline numberOfLines={1} placeholder={"Button 0"} style={styles.input} onChangeText={setButt0} editable maxLength={50}/>
+            <TextInput multiline numberOfLines={1} placeholder={"Button 1"} style={styles.input} onChangeText={setButt1} editable maxLength={50}/>
+            <TextInput multiline numberOfLines={1} placeholder={"Button 2"} style={styles.input} onChangeText={setButt2} editable maxLength={50}/>
           </View>
           
-          {/* <View> { Change Button Names }
-            <FlatList
-              data={filteredData}
-              renderItem={({item})=>(
-                <View>
-                  <Text style={styles.taskTitle}>{item.ButtonName}</Text>
-                  <TextInput numberOfLines={1} onChangeText={text => setTextValue1(text)} placeholder="New Button Name" style={styles.input} editable maxLength={100}/>
-                  <TouchableWithoutFeedback onPress={()=>(setButtonName(textValue1,item.ButtonName))}>
-                    <Text style={styles.smallButton}> Submit </Text>
-                  </TouchableWithoutFeedback>
-                </View>
-              )}
-              keyExtractor={(item, index)=>index.toString()}
-            />
-          </View> */}
-          
           <View>
-            <TouchableWithoutFeedback onPress={() => {checkGraph(name)}}>
+            <TouchableWithoutFeedback onPress={() => { checkGraph() }}>
               <Text style={styles.smallButton}> Submit </Text>
             </TouchableWithoutFeedback>
           </View>
@@ -870,7 +1008,7 @@ function NewGraph({ navigation }) {
           show = {alertConfirm}
           showProgress = {false}
           title = "Confirm Submission"
-          message= {alertText}
+          message= "Are All Fields Correct?"
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={true}
           showConfirmButton={true}
@@ -882,7 +1020,7 @@ function NewGraph({ navigation }) {
           contentContainerStyle={styles.alert}
           messageStyle={styles.alertBody}
           titleStyle={styles.alertText}
-          onConfirmPressed= {() => { throwAlertConfirm(false); addGraph(name, desc, butt0, butt1, butt2); }}
+          onConfirmPressed= {() => { throwAlertConfirm(false); addGraph(); }}
           onCancelPressed= {()=> { throwAlertConfirm(false); }}
         />
       </ScrollView>
@@ -893,7 +1031,7 @@ function NewGraph({ navigation }) {
 // Displays a graph.
 // Allows for the export of graphs
 // 
-function Graph({ navigation}) {
+function Graph({ navigation }) {
   // put the json data in here
   const [RawData, setRawData] = useState({ Data:[
     { ButtonName:"Button0", data:[0] },
@@ -932,6 +1070,7 @@ function Graph({ navigation}) {
       setRawData(GLOBAL.ITEM);
       console.log(GLOBAL.ITEM);
       setActiveComponent(GLOBAL.ITEM.GraphType);
+      toggleRefreshChild();
     });
     return unsubscribe;
   }, [navigation]);
@@ -1070,7 +1209,8 @@ function Graph({ navigation}) {
     const [month, day, year] = [date.getMonth(), date.getDate(), date.getFullYear()];
     const [hour, minutes, seconds, milliseconds] = [date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()];
     const tempJson = {Year:year, Month:month, Day:day, Hour:hour, Minutes:minutes, Seconds:seconds, Milliseconds:milliseconds};
-    AsyncCode.addToData(key,tempJson,buttonPushed);
+    const tempDate = date;
+    AsyncCode.addToData(key, tempJson, buttonPushed);
     GLOBAL.BUTTONPRESSED = true;
   }
 
@@ -1115,14 +1255,14 @@ function Graph({ navigation}) {
           <Text style={styles.regularText}> {RawData.Description}</Text>
           
           <GraphSwitch active={activePage}>
-            <HeatMap  rawData={RawData} key={refreshChild} styles={styles} name="HeatMap" /> 
-            <BarGraph rawData={RawData} key={refreshChild} styles={styles} name="BarGraph"  />
-            <ButtonOrderGraph rawData={RawData} key={refreshChild} styles={styles} name="ButtonOrderGraph"  />
-            <TimesPerDay rawData={RawData} key={refreshChild} styles={styles} name="TimesPerDay" />
+            <HeatMap  rawData={RawData} key={refreshChild} styles={styles} name="Heat Map" /> 
+            <BarGraph rawData={RawData} key={refreshChild} styles={styles} name="Bar Graph"  />
+            <ButtonOrderGraph rawData={RawData} key={refreshChild} styles={styles} name="Button Order"  />
+            <TimesPerDay rawData={RawData} key={refreshChild} styles={styles} name="Timeline" />
             <FlowerGraph rawData={RawData} key={refreshChild} styles={styles} name="Flower" />
             <Triskelion rawData={RawData} key={refreshChild} styles={styles} name="Triskelion" />
-            <ChessClock rawData={RawData} key={refreshChild} styles={styles} name="ChessClock"/>
-            <ButtonPressedPerDay rawData={RawData} key={refreshChild} styles={styles} name="ButtonPressedPerDay"/>
+            <ChessClock rawData={RawData} key={refreshChild} styles={styles} name="Chess Clock"/>
+            <ButtonPressedPerDay rawData={RawData} key={refreshChild} styles={styles} name="Stock Market"/>
             <Dandelion rawData={RawData} key={refreshChild} styles={styles} name="Dandelion" />
             <View key={refreshChild} name="NoDataYet">{/* Change Graph Type */}
               <Text style={styles.subheader}> Change Graph Type </Text>
@@ -1132,14 +1272,14 @@ function Graph({ navigation}) {
               </Picker>
               <GraphSwitch active={selectedOption}>
                 <Text style={styles.tinyText} key={refreshChild} name="NoDataYet"> No Graph Selected. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="BarGraph"> Displays the number of times each button is pressed. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="HeatMap"> Displays the number of times all buttons are pressed for each day. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="ButtonOrderGraph"> Displays the order of button pushes. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="TimesPerDay"> Displays when buttons are pressed each day. </Text>
+                <Text style={styles.tinyText} key={refreshChild} name="Bar Graph"> Displays the number of times each button is pressed. </Text>
+                <Text style={styles.tinyText} key={refreshChild} name="Heat Map"> Displays the number of times all buttons are pressed for each day. </Text>
+                <Text style={styles.tinyText} key={refreshChild} name="Button Order"> Displays the order of button pushes. </Text>
+                <Text style={styles.tinyText} key={refreshChild} name="Timeline"> Displays when buttons are pressed each day. </Text>
                 <Text style={styles.tinyText} key={refreshChild} name="Flower"> Displays the buttons pressed each day. </Text>
                 <Text style={styles.tinyText} key={refreshChild} name="Triskelion"> Displays the number of button pairs pressed. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="ChessClock"> Displays the duration between the same button being pressed.</Text>
-                <Text style={styles.tinyText} key={refreshChild} name="ButtonPressedPerDay"> Displays the number of times each button was pressed each day </Text>
+                <Text style={styles.tinyText} key={refreshChild} name="Chess Clock"> Displays the duration between the same button being pressed.</Text>
+                <Text style={styles.tinyText} key={refreshChild} name="Stock Market"> Displays the number of times each button was pressed each day </Text>
                 <Text style={styles.tinyText} key={refreshChild} name="Dandelion"> Displays the buttons pressed over a week. </Text>
               </GraphSwitch>
               <TouchableWithoutFeedback onPress={() => (setActiveComponent(currentGraph), AsyncCode.changeGraphType(currentGraph, RawData.Key), GLOBAL.ITEM.GraphType=currentGraph)}>
@@ -1153,15 +1293,15 @@ function Graph({ navigation}) {
           <View style={styles.barLine}></View>
           <Text style={styles.header}> Add Data </Text>
 
-          <TouchableOpacity opacity={0.5} onPress={() => buttonPush(0)}>
-            <Text style={styles.lightButton}> Button 0 </Text>
-          </TouchableOpacity>
-          <TouchableOpacity opacity={0.5} onPress={() => buttonPush(1)}>
-            <Text style={styles.lightButton}> Button 1 </Text>
-          </TouchableOpacity>
-          <TouchableOpacity opacity={0.5} onPress={() => buttonPush(2)}>
-            <Text style={styles.lightButton}> Button 2 </Text>
-          </TouchableOpacity>
+          {GLOBAL.ITEM.TempButtons.map((button, ButtonID) => {
+            return (
+              <View>
+                <TouchableOpacity opacity={0.5} onPress={() => buttonPush(button.ButtonID)}>
+                  <Text style={styles.lightButton}> {button.ButtonName} </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })}
         
           {/* <Text style={styles.subheader}> Export Data</Text>
           <TouchableWithoutFeedback onPress={()=>(exportData())}>
@@ -1275,7 +1415,6 @@ function GraphSettings({navigation}) {
   const [dataPointValue, setDataPointValue] = useState("");
   const [whatToShow, setShowing] = useState("");
 
-  let searchDate = ["","",""];
 
   // Used to save the data to asnyc when the page is left
   React.useEffect(() => {
@@ -1297,18 +1436,6 @@ function GraphSettings({navigation}) {
   // params data is the data the raw data will be set too
   const changeData = (data) => {
     setRawData(data);
-  }
-
-  // flags a point to be deleted
-  const doDeleteThisPoint = () => {
-    let temp = AsyncCode.removeDataPoint(RawData.Key, dataOnTrial);
-    //console.log(temp.Data);
-    throwAlert(null);
-    changeData(temp);
-    setCurData(temp.Data);
-    setFilteredData(temp.Data);
-    GLOBAL.ITEM = temp;
-    GLOBAL.BUTTONPRESSED = true;
   }
 
   // this throws the Alert
@@ -1470,7 +1597,7 @@ function GraphSettings({navigation}) {
           contentContainerStyle={styles.alert}
           messageStyle={styles.alertBody}
           titleStyle={styles.alertText}
-          onConfirmPressed={() => { throwSuccessAlert(false); }}
+          onConfirmPressed={() => { throwSuccessAlert(false); navigation.pop(); }}
         />
 
         {/* Add Graph error */}

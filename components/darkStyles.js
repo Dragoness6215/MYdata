@@ -41,7 +41,7 @@ export default StyleSheet.create({
     },
     fixToText: {
         flexDirection: 'row',
-        flex:2,
+        flex: 2,
         margin: 10,
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -407,7 +407,22 @@ export default StyleSheet.create({
     headerIcon:{
         alignSelf:'center', 
         width: 30, 
-        height: 30
+        height: 30,
     },
+    graphIcon:{
+        alignSelf:'center',
+        width: 160, 
+        height: 100,
+    },
+    graphIconBig:{
+        alignSelf:'center',
+        width: 300,
+        height: 200,
+    },
+    backgroundImage:{
+        alignSelf:'center',
+        width: 380,
+        height: 380,
+    }
 })
 
