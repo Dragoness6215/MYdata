@@ -55,7 +55,7 @@ export default class FlowerGraph extends React.Component {
 
   // called on load
   componentDidMount(){
-    let tempGraphData=this.DataProcessing(GLOBAL.ITEM);
+    let tempGraphData=this.DataProcessing(this.props.rawData);
     let newTableData=this.ChangeTableData(tempGraphData);
     this.setState({
       isLoading:false,

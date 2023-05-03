@@ -29,7 +29,7 @@ import BleCode from './components/BleCode.js';
 // User Graph Imports
 import BarGraph from "./components/GraphLibraries/barGraph.js";
 import HeatMap from './components/GraphLibraries/heatGraph.js';
-import ButtonOrderGraph from "./components/GraphLibraries/buttonOrderPressed.js"
+import ButtonOrder from "./components/GraphLibraries/buttonOrderPressed.js"
 import TimesPerDay from './components/GraphLibraries/timePressedEachDay.js';
 import FlowerGraph from './components/GraphLibraries/FlowerGraph.js';
 import Triskelion from './components/GraphLibraries/triskelion.js';
@@ -40,96 +40,42 @@ import Dandelion from "./components/GraphLibraries/dandelion.js";
 const BleManagerModule = NativeModules.BleManager;
 const bleEmitter = new NativeEventEmitter(BleManagerModule);
 
-//Switches between the two styles, set as either lightStyles or darkStyles
-let styles=lightStyles;
+let styles = lightStyles;
 
-//used to add new graphs
-// graphOptions is the list of graphs that can be selected
-const graphOptions = [
-  <Picker.Item label="Set Graph Type" value="NoDataYet" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Bar Graph" value="Bar Graph" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Heat Map" value="Heat Map" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Button Order" value="Button Order" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Timeline" value="Timeline" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Flowers" value="Flower" style={styles.pickerDropdown} />,
-  <Picker.Item label="Triskelion" value="Triskelion" style={styles.pickerDropdown} />,
-  <Picker.Item label="Chess Clock" value="Chess Clock" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Stock Market" value="Stock Market" style={styles.pickerDropdown}/>,
-  <Picker.Item label="Dandelion" value="Dandelion" style={styles.pickerDropdown} />,
-]
-
-// graphDescriptions is the graph's descriptions
-const graphDescriptions = [
-  <Text style={styles.tinyText} name="NoDataYet"> No Graph Selected. </Text>,
-  <Text style={styles.tinyText} name="BarGraph"> Displays the number of times each button is pressed. </Text>,
-  <Text style={styles.tinyText} name="HeatMap"> Displays the number of times all buttons are pressed for each day. </Text>,
-  <Text style={styles.tinyText} name="ButtonOrder"> Displays the order of button pushes. </Text>,
-  <Text style={styles.tinyText} name="Timeline"> Displays when buttons are pressed each day.</Text>,
-  <Text style={styles.tinyText} name="Flowers"> Displays the buttons pressed each day. </Text>,
-  <Text style={styles.tinyText} name="Triskelion"> Displays the number of button pairs pressed. </Text>,
-  <Text style={styles.tinyText} name="ChessClock"> Displays the duration between the same button being pressed.</Text>,
-  <Text style={styles.tinyText} name="StockMarket"> Displays the number of times each button was pressed each day </Text>,
-  <Text style={styles.tinyText} name="Dandelion"> Displays the buttons pressed over a week. </Text>,
-]
-// DON'T FORGET TO ADD TO GRAPHSWITCH IN GRAPHS AS WELL
-
-//Temporary list to test dynamically generating graph library display
+//List of all available graphs and associated attributes
+//To add graph, add array with name, image, and description fields as shown below
 const graphLibrary = [
-  {
-    key: 0,
-    name: "Bar Graph",
-    image: require('./assets/BarGraph.png'),
-    description: "Displays the number of times each button is pressed."
-  },
-  {
-    key: 1,
-    name: "Button Order",
-    image: require('./assets/ButtonOrder.png'),
-    description: "Displays the order of button pushes."
-  },
-  {
-    key: 2,
-    name: "Chess Clock",
-    image: require('./assets/ChessClock.png'),
-    description: "Displays the duration between the same button being pressed."
-  },
-  {
-    key: 3,
-    name: "Dandelion",
-    image: require('./assets/Dandelion.png'),
-    description: "Displays the buttons pressed, separated by days."
-  },
-  {
-    key: 4,
-    name: "Flowers",
-    image: require('./assets/Flowers.png'),
-    description: "Displays the buttons pressed each day."
-  },
-  {
-    key: 5,
-    name: "Heat Map",
-    image: require('./assets/HeatMap.png'),
-    description: "Displays the number of times all buttons are pressed for each day."
-  },
-  {
-    key: 6,
-    name: "Stock Market",
-    image: require('./assets/TotalButtons.png'),
-    description: "Displays the number of times each button was pressed each day"
-  },
-  {
-    key: 7,
-    name: "Timeline",
-    image: require('./assets/Timeline.png'),
-    description: "Displays when buttons are pressed each day."
-  },
-  {
-    key: 8,
-    name: "Triskelion",
-    image: require('./assets/Knot.png'),
-    description: "Displays the number of button pairs pressed."
-  },
+  { name: "Bar Graph", image: require('./assets/BarGraph.png'), description: "Displays the number of times each button is pressed." },
+  { name: "Button Order", image: require('./assets/ButtonOrder.png'), description: "Displays the order of button pushes." },
+  { name: "Chess Clock", image: require('./assets/ChessClock.png'), description: "Displays the duration between the same button being pressed." },
+  { name: "Dandelion", image: require('./assets/Dandelion.png'), description: "Displays the buttons pressed, separated by days." },
+  { name: "Flowers", image: require('./assets/Flowers.png'), description: "Displays the buttons pressed each day." },
+  { name: "Heat Map", image: require('./assets/HeatMap.png'), description: "Displays the number of times all buttons are pressed for each day." },
+  { name: "Stock Market", image: require('./assets/TotalButtons.png'), description: "Displays the number of times each button was pressed each day" },
+  { name: "Timeline", image: require('./assets/Timeline.png'), description: "Displays when buttons are pressed each day." },
+  { name: "Triskelion", image: require('./assets/Knot.png'), description: "Displays the number of button pairs pressed." },
 ]
+
+//List of graphs for dropdowns
+const graphOptions = [
+];
+
+const graphOptionsNew = [
+  <Picker.Item label={"Set Graph Type"} value={null} style={styles.pickerDropdown}/>
+];
+
+//List of graph descriptions
+const graphDescriptions = [
+];
+
+//Populates graphoptions and graphdescriptions from initial list
+graphLibrary.map((graph, key) => {
+  graphOptions.push(<Picker.Item label={graph.name} value={graph.name} style={styles.pickerDropdown}/>);
+  graphOptionsNew.push(<Picker.Item label={graph.name} value={graph.name} style={styles.pickerDropdown}/>);
+  graphDescriptions.push(<Text style={styles.tinyText} name={graph.name}> {graph.description} </Text>);
+});
+
+// DON'T FORGET TO ADD TO GRAPHSWITCH IN GRAPHS AS WELL
 
 // Manages pages and recalls the order
 const Stack = createNativeStackNavigator();
@@ -655,7 +601,7 @@ function GraphLibrary({navigation}) {
           <View style={styles.fixToText}>
             {graphLibrary.map((graph, key) => {
               return (
-                <View>
+                <View key={key}>
                   <TouchableWithoutFeedback onPress={() => showAlert(graph)}>
                     <Image source={graph.image} style={styles.graphIcon}/>
                   </TouchableWithoutFeedback>
@@ -686,7 +632,7 @@ function GraphLibrary({navigation}) {
           show = {alertConfirm}
           showProgress = {false}
           title = "Confirm Submission"
-          message= "Do You Want to Make a New Graph of This Type?"
+          message= "Do You Want to Make a New Graph?"
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={true}
           showConfirmButton={true}
@@ -717,10 +663,11 @@ let refresh = false;
 // Pulls data from Async Storage
 function SelectData({navigation}) {
   // stores all the array objects
-  const [thisState, setThisState] = useState({textArray:[], showAlert:false});
+  const [asyncStorage, setAsyncStorage] = useState([]);
+  const [alert, throwAlert] = useState(false);
+  const [connectionAlert, throwConnectionAlert] = useState(false);
   
   // states for the alerts
-  const [showAlert, setAlert] = useState(false);
   const [tempkey, setKey] = useState("");
   const [text, setText]= useState('');
 
@@ -728,7 +675,7 @@ function SelectData({navigation}) {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => {
       AsyncCode.restoreFromAsync();
-      setThisState({textArray:AsyncCode.getTextArray()});
+      setAsyncStorage(AsyncCode.getTextArray());
     });
     return unsubscribe;
   }, [navigation]);
@@ -766,62 +713,39 @@ function SelectData({navigation}) {
       }
     }
     AsyncCode.restoreFromAsync();
-    setThisState({showAlert:false, textArray:AsyncCode.getTextArray()});
+    setAsyncStorage(AsyncCode.getTextArray());
+    throwAlert(false);
   }
-
-  // sets the text
-  const changeHandler=(val) => {
-    setText(val);
-  }
-
-  const [alertText, setAlertText] = useState("");
-  const [alert, throwAlert] = useState(false);
-  const [connectionAlert, throwConnectionAlert] = useState(false);
-
-  // Adds a new Graph. 
-  // if the name doesn't exist, it throws an alert.
-  //if the name is already taken, it throws an alert.
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View>
-          <View>
-            <Text style={styles.title}> Graphs </Text>
-            <View>
-              <FlatList data={thisState.textArray} renderItem={({ item }) =>
-                <View style={styles.bottomLine}>
-                  <View style={styles.buttonBox}>
-                    <TouchableWithoutFeedback onPress={() => {navigateAndSendDataGraph(item);}}>
-                      <Text style={styles.button}> {item.Title} </Text>
-                    </TouchableWithoutFeedback>
-                    <TouchableWithoutFeedback onPress={() => {setKey(item.Key); setThisState({showAlert:true, textArray:AsyncCode.getTextArray()}); refresh=false;}}>
-                      <Text style={styles.warningButton}> {"Delete " + item.Title} </Text>
-                    </TouchableWithoutFeedback>
-                  </View>
-                </View>}
-              />
-            </View>
-            
-            <Text style={styles.header}> Add Graph </Text>
-            <View style={styles.buttonBox}>
-                {/* <TextInput 
-                    style={styles.input}
-                    placeholder="Graph Name"
-                    onChangeText={(val)=>changeHandler(val)}
-                /> */}
-              <View>
-                <TouchableWithoutFeedback onPress={() => {navigation.navigate('New Graph');}}>
-                  <Text style={styles.smallButton}> Create New Graph </Text>
-                </TouchableWithoutFeedback>
+          <Text style={styles.title}> Graphs </Text>
+          {asyncStorage.map((graph, i) => {
+            return (
+              <View key={i} style={styles.bottomLine}>
+                <View style={styles.buttonBox}>
+                  <TouchableWithoutFeedback onPress={() => {navigateAndSendDataGraph(graph);}}>
+                    <Text style={styles.button}> {graph.Title} </Text>
+                  </TouchableWithoutFeedback>
+                  <TouchableWithoutFeedback onPress={() => {setKey(graph.Key); throwAlert(true); setAsyncStorage(AsyncCode.getTextArray()); refresh=false;}}>
+                    <Text style={styles.warningButton}> {"Delete " + graph.Title} </Text>
+                  </TouchableWithoutFeedback>
+                </View>
               </View>
-            </View>
-          </View>
+            );
+          })}
+
+          <Text style={styles.header}> Add Graph </Text>
+          <TouchableWithoutFeedback onPress={() => {navigation.navigate('New Graph');}}>
+            <Text style={styles.smallButton}> Create New Graph </Text>
+          </TouchableWithoutFeedback>
         </View>
           
         {/* Delete Graph */}
         <AwesomeAlert
-          show={thisState.showAlert}
+          show={alert}
           showProgress={false}
           title="Delete Graph"
           message= {"Are you sure you wish to delete the graph?"}
@@ -836,24 +760,7 @@ function SelectData({navigation}) {
           messageStyle={styles.alertBody}
           titleStyle={styles.alertText}
           onConfirmPressed={() => { updateData("remove"); }}
-          onCancelPressed={()=> { setThisState({showAlert:false, textArray:AsyncCode.getTextArray()}); }}
-        />
-          
-        {/* Add Graph error */}
-        <AwesomeAlert
-          show={alert}
-          showProgress={false}
-          title="Add Graph Error"
-          message= {alertText}
-          closeOnTouchOutside={false}
-          closeOnHardwareBackPress={true}
-          showConfirmButton={true}
-          confirmButtonColor="#63ba83"
-          contentContainerStyle={styles.alert}
-          messageStyle={styles.alertBody}
-          titleStyle={styles.alertText}
-          onConfirmPressed={() => { throwAlert(false); }}
-          onCancelPressed={()=> { throwAlert(false); }}
+          onCancelPressed={()=> { setAsyncStorage(AsyncCode.getTextArray()); throwAlert(false); }}
         />
         
         {/* Not Connected */}
@@ -871,7 +778,8 @@ function SelectData({navigation}) {
           contentContainerStyle={styles.alert}
           messageStyle={styles.alertBody}
           titleStyle={styles.alertText}
-          onConfirmPressed={() => { throwConnectionAlert(false); navigation.navigate('Graph'); }}
+          onConfirmPressed={() => { throwConnectionAlert(false); navigation.navigate('Graph', {keyParam: GLOBAL.KEY}) ; }}
+          onDismiss={() => { throwConnectionAlert(false); }}
         />
       </ScrollView>
     </SafeAreaView>
@@ -879,7 +787,6 @@ function SelectData({navigation}) {
 }
 
 //New Graph Screen Code
-
 function NewGraph({ route, navigation }) {
   //Updates variables with entered data
   const {typeParam} = route.params;
@@ -895,7 +802,7 @@ function NewGraph({ route, navigation }) {
   const [alert, throwAlert] = useState(false);
   const [alertConfirm, throwAlertConfirm] = useState(false);
 
-  const [thisState, setThisState]= useState({textArray: [], showAlert:false});
+  const [thisState, setThisState]= useState({textArray: []});
   
   //On load, restore data from storage
   React.useEffect(() => {
@@ -951,39 +858,29 @@ function NewGraph({ route, navigation }) {
   
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
+      <ScrollView style={styles.scrollView}>
         <View>
           <Text style={styles.title}> New Graph </Text>
-          <View style={styles.space}/>
           
           <Text style={styles.subheader}> Graph Name </Text>
-          <View>
-            <TextInput multiline numberOfLines={1} placeholder="Graph Name" style={styles.input} onChangeText={setName} value={name} editable maxLength={100}/>
-          </View>
-          <View style={styles.space}/>
+          <TextInput multiline numberOfLines={1} placeholder="Graph Name" style={styles.input} onChangeText={setName} value={name} editable maxLength={100}/>
           
           <Text style={styles.subheader}> Graph Description </Text>
-          <View>
-            <TextInput multiline numberOfLines={4} placeholder="Graph Description" style={styles.input} onChangeText={setDesc} value={desc} editable maxLength={1000}/>
-          </View>
+          <TextInput multiline numberOfLines={4} placeholder="Graph Description" style={styles.input} onChangeText={setDesc} value={desc} editable maxLength={1000}/>
 
           <Text style={styles.subheader}> Graph Type </Text>
           <Picker style={styles.picker} selectedValue={type} mode="dropdown" onValueChange={(item) => (setType(item))}>
-            {graphOptions}
+            {graphOptionsNew}
           </Picker>
 
           <Text style={styles.subheader}> Button Names </Text>
-          <View>
-            <TextInput multiline numberOfLines={1} placeholder={"Button 0"} style={styles.input} onChangeText={setButt0} editable maxLength={50}/>
-            <TextInput multiline numberOfLines={1} placeholder={"Button 1"} style={styles.input} onChangeText={setButt1} editable maxLength={50}/>
-            <TextInput multiline numberOfLines={1} placeholder={"Button 2"} style={styles.input} onChangeText={setButt2} editable maxLength={50}/>
-          </View>
+          <TextInput multiline numberOfLines={1} placeholder={"Button 0"} style={styles.input} onChangeText={setButt0} editable maxLength={50}/>
+          <TextInput multiline numberOfLines={1} placeholder={"Button 1"} style={styles.input} onChangeText={setButt1} editable maxLength={50}/>
+          <TextInput multiline numberOfLines={1} placeholder={"Button 2"} style={styles.input} onChangeText={setButt2} editable maxLength={50}/>
           
-          <View>
-            <TouchableWithoutFeedback onPress={() => { checkGraph() }}>
-              <Text style={styles.smallButton}> Submit </Text>
-            </TouchableWithoutFeedback>
-          </View>
+          <TouchableWithoutFeedback onPress={() => { checkGraph() }}>
+            <Text style={styles.smallButton}> Submit </Text>
+          </TouchableWithoutFeedback>
         </View>
 
         {/*Invalid Title Error*/}
@@ -1031,8 +928,11 @@ function NewGraph({ route, navigation }) {
 // Displays a graph.
 // Allows for the export of graphs
 // 
-function Graph({ navigation }) {
+function Graph({ route, navigation }) {
   // put the json data in here
+  const { keyParam } = route.params;
+
+
   const [RawData, setRawData] = useState({ Data:[
     { ButtonName:"Button0", data:[0] },
     { ButtonName:"Button1", data:[0,1] },
@@ -1042,7 +942,7 @@ function Graph({ navigation }) {
   const [selectedOption, setSelected] = useState();
   const [textValue, setTextValue] = useState("Put the new text here");
   const [refreshChild, setRefreshChild] = useState(false);
-  const [refreshing, setRefreshing] = React.useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [currentDescription, setDescription] = useState("");
   const [currentGraph, setCurGraph ] = useState("");
   const [showAlert, setAlert] = useState(false);
@@ -1170,10 +1070,10 @@ function Graph({ navigation }) {
 
   // used to update GLOBAL data and navigate to alter data
   const navigateGraphSettings = (item) => {
-    GLOBAL.ITEM = item;
-    GLOBAL.KEY = item.Key;
-    GLOBAL.TITLES = item.Title;
-    navigation.navigate('Graph Settings');
+    // GLOBAL.ITEM = item;
+    // GLOBAL.KEY = item.Key;
+    // GLOBAL.TITLES = item.Title;
+    navigation.navigate('Graph Settings', { keyParam: item.Key });
   }
 
   const navigateEditData = (item) => {
@@ -1209,8 +1109,8 @@ function Graph({ navigation }) {
     const [month, day, year] = [date.getMonth(), date.getDate(), date.getFullYear()];
     const [hour, minutes, seconds, milliseconds] = [date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()];
     const tempJson = {Year:year, Month:month, Day:day, Hour:hour, Minutes:minutes, Seconds:seconds, Milliseconds:milliseconds};
-    const tempDate = date;
-    AsyncCode.addToData(key, tempJson, buttonPushed);
+    const tempDate = {Date: date, ButtonID: buttonPushed};
+    AsyncCode.addToData(key, tempDate, tempJson, buttonPushed);
     GLOBAL.BUTTONPRESSED = true;
   }
 
@@ -1257,14 +1157,14 @@ function Graph({ navigation }) {
           <GraphSwitch active={activePage}>
             <HeatMap  rawData={RawData} key={refreshChild} styles={styles} name="Heat Map" /> 
             <BarGraph rawData={RawData} key={refreshChild} styles={styles} name="Bar Graph"  />
-            <ButtonOrderGraph rawData={RawData} key={refreshChild} styles={styles} name="Button Order"  />
+            <ButtonOrder rawData={RawData} key={refreshChild} styles={styles} name="Button Order"  />
             <TimesPerDay rawData={RawData} key={refreshChild} styles={styles} name="Timeline" />
-            <FlowerGraph rawData={RawData} key={refreshChild} styles={styles} name="Flower" />
+            <FlowerGraph rawData={RawData} key={refreshChild} styles={styles} name="Flowers" />
             <Triskelion rawData={RawData} key={refreshChild} styles={styles} name="Triskelion" />
             <ChessClock rawData={RawData} key={refreshChild} styles={styles} name="Chess Clock"/>
             <ButtonPressedPerDay rawData={RawData} key={refreshChild} styles={styles} name="Stock Market"/>
             <Dandelion rawData={RawData} key={refreshChild} styles={styles} name="Dandelion" />
-            <View key={refreshChild} name="NoDataYet">{/* Change Graph Type */}
+            {/* <View key={refreshChild} name="NoDataYet">{/* Change Graph Type }
               <Text style={styles.subheader}> Change Graph Type </Text>
               <Picker style={styles.picker} selectedValue={selectedOption} mode="dropdown"
                 onValueChange={(itemValue, itemIndex) => (setCurGraph(itemValue), setSelected(itemValue))}>
@@ -1285,7 +1185,7 @@ function Graph({ navigation }) {
               <TouchableWithoutFeedback onPress={() => (setActiveComponent(currentGraph), AsyncCode.changeGraphType(currentGraph, RawData.Key), GLOBAL.ITEM.GraphType=currentGraph)}>
                 <Text style={styles.smallButton}> Change Graph Type </Text>
               </TouchableWithoutFeedback>
-            </View>
+            </View> */}
           </GraphSwitch>
         </ViewShot>
         
@@ -1383,38 +1283,21 @@ function Graph({ navigation }) {
 }
 
 // Alters the data set and some graph settings
-function GraphSettings({navigation}) {
-  const [RawData, setRawData] = useState({});
-  const [curData, setCurData] = useState([
-    { ButtonName:"Button0", data:[0] },
-    { ButtonName:"Button1", data:[0,1] },
-    { ButtonName:"Button2", data:[0,1,2] },
-  ]); 
-  const [filteredData,setFilteredData] = useState([
-    { ButtonName:"Button0", data:[0] },
-    { ButtonName:"Button1", data:[0,1] },
-    { ButtonName:"Button2", data:[0,1,2] },
-  ]);
+function GraphSettings({ route, navigation }) {
+  const { keyParam } = route.params;
+  let graph = AsyncCode.getGraph(keyParam);
 
-  const [showError, setShowError] = useState(false);
-  const [showAlert, setAlert] = useState(false);
-  const [alertSuccess, throwSuccessAlert] = useState(false);
+  const [name, setName] = useState(graph.Title);
+  const [desc, setDesc] = useState(graph.Description);
+  const [type, setType] = useState(graph.GraphType);
+  const [buttons, setButtons] = useState(graph.TempButtons);
+
+  const [alert, throwAlert] = useState(false);
+  const [alertConfirm, throwAlertConfirm] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
   const [alertText, setAlertText]=useState("");
-  const [titleAlert, throwTitleAlert]=useState(false);
 
-  const [dataOnTrial, setTrial] = useState({});
-  const [textValue, setTextValue] = useState("");
-  const [textValue0, setTextValue0] = useState("");
-  const [textValue1, setTextValue1] = useState("");
-  const [currentGraph, setCurGraph ] = useState("");
-  const [selectedOption,setSelected] = useState();
-  const [activePage, setActiveComponent] = useState("NoDataYet");
-  const [refreshChild, setRefreshChild] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalData, setModalData] = useState({});
-  const [dataPointValue, setDataPointValue] = useState("");
-  const [whatToShow, setShowing] = useState("");
-
+  const [asyncStorage, setAsyncStorage]= useState([]);
 
   // Used to save the data to asnyc when the page is left
   React.useEffect(() => {
@@ -1425,187 +1308,91 @@ function GraphSettings({navigation}) {
   // Stuff done on page load.
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => {
-      changeData(GLOBAL.ITEM);
-      setCurData(GLOBAL.ITEM.Data);
-      setFilteredData(GLOBAL.ITEM.Data);
+      setAsyncStorage(AsyncCode.getTextArray());
     });
     return unsubscribe;
   }, [navigation]);
 
-  // changes the rawData
-  // params data is the data the raw data will be set too
-  const changeData = (data) => {
-    setRawData(data);
+  const editButtons = (text, id) => {
+    let ButtonsTemp = buttons;
+    ButtonsTemp[id].ButtonName = text;
+    setButtons(ButtonsTemp);
   }
 
-  // this throws the Alert
-  const throwAlert = (item) => {
-    setTrial(item);
-    if(showAlert) {
-      setAlert(false);
+  const checkGraph = () => {
+    if (graph.Title != name) {
+      setAlertTitle("Invalid Title");
+      if(!name) {
+        setAlertText("Please Enter A Graph Title");
+        throwAlert(true);
+        console.log("No Name");
+        return;
+      }
+  
+      for (let i = 0; i < asyncStorage.length; i++) {
+        console.log(asyncStorage[i].Title);
+        if(name == asyncStorage[i].Title) {
+          setAlertText("Graph Title Already In Use");
+          throwAlert(true);
+          console.log("Same Name");
+          return;
+        }
+      }
     }
-    else {
-      setAlert(true);
-    }
-  };
 
-  //changes the description of a graph
-  const setDesctiption = async (text) =>{
-    let tempData = RawData;
-    tempData.Description = text;
-    setRawData(tempData);
-    AsyncCode.alterAsyncItem(tempData);
-    GLOBAL.ITEM = tempData;
-    throwSuccessAlert(true);
-  }
-
-  // sets the title
-  const setTitle = async (text) =>{
-    if (text.length < 1) {
-      setAlertText("No Graph Name");
-      throwTitleAlert(true);
-      console.log("No Name");
-      return;
-    }
-    let rawData = AsyncCode.getTextArray();
-    for(let i = 0; i < rawData.length; i++){
-      console.log(rawData[i].Title);
-      if(text == rawData[i].Title) {
-        setAlertText("This graph name already exists");
-        throwTitleAlert(true);
-        console.log("Same Name");
+    for (let i = 0; i < buttons.length; i++) {
+      if (!buttons[i].ButtonName) {
+        setAlertTitle("Invalid Button Name");
+        setAlertText("Please Enter A Button Name");
+        throwAlert(true);
+        console.log("No Button Name")
         return;
       }
     }
-    let tempData = RawData;
-    tempData.Title = text;
-    setRawData(tempData);
-    AsyncCode.alterAsyncItem(tempData);
-    GLOBAL.ITEM = tempData;
-    throwSuccessAlert(true);
+
+    throwAlertConfirm(true);
   }
 
-  //sets button name
-  const setButtonName = async (text,oldName) => {
-    let tempData=RawData;
-    for(let i = 0; i < tempData.Data.length; i++){
-      if(tempData.Data[i].ButtonName == oldName){
-        tempData.Data[i].ButtonName = text;
-        break;
-      }
-    }
-    setRawData(tempData);
-    AsyncCode.alterAsyncItem(tempData);
-    GLOBAL.ITEM = tempData;
-    throwSuccessAlert(true);
+  const submitChanges = () => {
+    AsyncCode.updateGraph(name, desc, type, buttons, keyParam);
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
-        <Text style={styles.title}> Graph Settings </Text>
-        <Picker style={styles.picker} selectedValue={whatToShow} mode="dropdown" onValueChange={(itemValue, itemIndex) => (setShowing(itemValue))}>
-          <Picker.Item label="Pick an option" value="" style={styles.pickerDropdown}/>
-          <Picker.Item label="Change Graph Type" value="ChangeGraphType" style={styles.pickerDropdown}/>
-          <Picker.Item label="Change Title" value="ChangeTitle" style={styles.pickerDropdown}/>
-          <Picker.Item label="Change Description" value="ChangeDescription" style={styles.pickerDropdown}/>
-          <Picker.Item label="Change Button Names" value="ChangeButtonNames" style={styles.pickerDropdown}/>
-        </Picker>
+        <View>
+          <Text style={styles.title}> Graph Settings </Text>
+          
+          <Text style={styles.subheader}> Graph Name </Text>
+          <TextInput numberOfLines={1} defaultValue={name} style={styles.input} onChangeText={setName} value={name} editable maxLength={100}/>
+          
+          <Text style={styles.subheader}> Graph Description </Text>
+          <TextInput multiline numberOfLines={4} defaultValue={desc} style={styles.input} onChangeText={setDesc} value={desc} editable maxLength={1000}/>
 
-        { whatToShow === '' ? (
-            <Text style={styles.regularText}> Select an Option Above </Text>
-            ) : whatToShow === 'ChangeGraphType' ? (
-              <View>{/* Change Graph Type */}
-                <Text style={styles.subheader}> Change Graph Type </Text>
-                <Picker
-                    style={styles.picker}
-                    selectedValue={selectedOption}
-                    mode="dropdown"
-                    onValueChange={(itemValue, itemIndex) => (setCurGraph(itemValue),setSelected(itemValue))
-                  }>
-                  {graphOptions}
-                </Picker>
-                <GraphSwitch active={selectedOption}>
-                  {graphDescriptions}
-                </GraphSwitch>
-                { selectedOption !== "NoDataYet" ?(
-                  <TouchableWithoutFeedback onPress={() => (setActiveComponent(currentGraph), AsyncCode.changeGraphType(currentGraph,RawData.Key), GLOBAL.ITEM.GraphType=currentGraph)}>
-                    <Text style={styles.smallButton}> Change Graph Type </Text>
-                  </TouchableWithoutFeedback>
-                ): null}
-              </View>
-            ) : whatToShow === 'ChangeTitle' ? (
-              <View>{/* Change Title */}
-                <Text style={styles.subheader}> Change Title </Text>
-                <TextInput
-                  numberOfLines={1}
-                  onChangeText={text => setTextValue0(text)}
-                  placeholder="New Title Here"
-                  style={styles.input}
-                  editable
-                  maxLength={100}
-                />
-                <TouchableWithoutFeedback onPress={()=>(setTitle(textValue0))}>
-                  <Text style={styles.smallButton}> Submit </Text>
-                </TouchableWithoutFeedback>
-              </View>
-            ): whatToShow==='ChangeDescription' ? (
-              <View>{/* Change Description */}
-                <Text style={styles.subheader}> Change Description </Text>
-                <TextInput
-                  multiline
-                  numberOfLines={5}
-                  onChangeText={text => setTextValue(text)}
-                  placeholder="New Description Here"
-                  style={styles.input}
-                  editable
-                  maxLength={5000}
-                />
-                <TouchableWithoutFeedback onPress={()=>(setDesctiption(textValue))}>
-                  <Text style={styles.smallButton}> Submit </Text>
-                </TouchableWithoutFeedback>
-              </View>
-            ): whatToShow==='ChangeButtonNames' ? (
-              <View>{/* Change Button Names */}
-                <FlatList
-                    data={filteredData}
-                    renderItem={({item})=>(
-                      <View>
-                        <Text style={styles.taskTitle}>{item.ButtonName}</Text>
-                        <TextInput numberOfLines={1} onChangeText={text => setTextValue1(text)} placeholder="New Button Name" style={styles.input} editable maxLength={100}/>
-                        <TouchableWithoutFeedback onPress={()=>(setButtonName(textValue1,item.ButtonName))}>
-                          <Text style={styles.smallButton}> Submit </Text>
-                        </TouchableWithoutFeedback>
-                      </View>
-                    )}
-                    keyExtractor={(item, index)=>index.toString()}
-                  />
-              </View>
-            ): null}
-        
-        <AwesomeAlert
-          show={alertSuccess}
-          showProgress={false}
-          title="Success"
-          message= {"Graph Changed"}
-          closeOnTouchOutside={true}
-          closeOnHardwareBackPress={false}
-          showCancelButton={false}
-          showConfirmButton={true}
-          confirmText="Okay"
-          confirmButtonColor="#E07A5F"
-          contentContainerStyle={styles.alert}
-          messageStyle={styles.alertBody}
-          titleStyle={styles.alertText}
-          onConfirmPressed={() => { throwSuccessAlert(false); navigation.pop(); }}
-        />
+          <Text style={styles.subheader}> Graph Type </Text>
+          <Picker style={styles.picker} selectedValue={type} mode="dropdown" onValueChange={(item) => (setType(item))}>
+            {graphOptions}
+          </Picker>
 
-        {/* Add Graph error */}
+          <Text style={styles.subheader}> Button Names </Text>
+          {buttons.map((button) => {
+            return (
+              <View>
+                <TextInput numberOfLines={1} defaultValue={button.ButtonName} style={styles.input} onChangeText={(text) => (editButtons(text, button.ButtonID))} editable maxLength={50}/>
+              </View>
+            );
+          })}
+          
+          <TouchableOpacity opacity={0.2} onPress={() => { checkGraph() }}>
+            <Text style={styles.smallButton}> Submit </Text>
+          </TouchableOpacity>
+        </View>
+
         <AwesomeAlert
-          show={titleAlert}
+          show={alert}
           showProgress={false}
-          title="Add Graph Error"
-          message={alertText}
+          title={alertTitle}
+          message= {alertText}
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={true}
           showConfirmButton={true}
@@ -1613,8 +1400,28 @@ function GraphSettings({navigation}) {
           contentContainerStyle={styles.alert}
           messageStyle={styles.alertBody}
           titleStyle={styles.alertText}
-          onConfirmPressed={() => { throwTitleAlert(false); }}
-          onCancelPressed={()=> { throwTitleAlert(false); }}
+          onConfirmPressed= {() => { throwAlert(false); }}
+          onCancelPressed= {()=> { throwAlert(false); }}
+        />
+        
+        <AwesomeAlert
+          show = {alertConfirm}
+          showProgress = {false}
+          title = "Confirm Changes"
+          message= "Are All Fields Correct?"
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={true}
+          showConfirmButton={true}
+          showCancelButton={true}
+          confirmButtonColor="#63ba83"
+          cancelButtonColor="#E07A5F"
+          confirmText="Confirm"
+          cancelText="Cancel"
+          contentContainerStyle={styles.alert}
+          messageStyle={styles.alertBody}
+          titleStyle={styles.alertText}
+          onConfirmPressed= {() => { throwAlertConfirm(false); submitChanges(); }}
+          onCancelPressed= {()=> { throwAlertConfirm(false); }}
         />
       </ScrollView>
     </SafeAreaView>

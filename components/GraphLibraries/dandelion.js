@@ -26,13 +26,13 @@ let indigo="#6243b0";
 
 let colorArray = [red, blue, yellow];
 
-
 export default class Dandelion extends React.Component {
 
   // State of the class, data stored in here
   // @param: props, the props passed in from the the parent class
   constructor(props) {
     super(props);
+    console.log(props.rawData);
     this.state = {
       isLoading: true,
       numberOfDays:0,
@@ -54,71 +54,46 @@ export default class Dandelion extends React.Component {
   // When the passed in value changes, this is called
   // Updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps !== this.props || this.state.isLoading) {
-      let tempGraphData=this.DataProcessing(this.props.rawData);
-      let newTableData=this.ChangeTableData(tempGraphData);
-      this.setState({
-        isLoading:false,
-        graphData:tempGraphData,
-        tableData:newTableData,
-        title:this.props.rawData.Title,
-      });
-      this.previousProps=this.props;
+    if (prevProps !== this.props) {
+      this.DataProcessing(this.props.rawData);
+      console.log("Running Update");
     }
   }
 
   // This is Called on load
   // Updates the state for the graph
   componentDidMount(){
-    let tempGraphData=this.DataProcessing(GLOBAL.ITEM);
-    let newTableData=this.ChangeTableData(tempGraphData);
-    this.setState({
-      isLoading:false,
-      graphData:tempGraphData,
-      tableData:newTableData,
-      title:GLOBAL.ITEM.Title,
-    });
+    this.DataProcessing(this.props.rawData);
   }
 
   // This is used to manually reload the state
-  updateData(){
-      this.setState({
-        isLoading:true,
-      });
-  }
-
-  reformatDate = (rawJson, i, j) => {
-    let tempJson = {};
-    let date = new Date(rawJson.data[j].Year, rawJson.data[j].Month+1, rawJson.data[j].Day, rawJson.data[j].Hour, rawJson.data[j].Minutes, rawJson.data[j].Seconds, rawJson.data[j].Milliseconds);
-    tempJson.data = date;
-    tempJson.button = i;
-    tempJson.buttonName = rawJson.ButtonName;
-    return tempJson;
+  
+  updateData = () => {
+    this.setState({
+      isLoading:true,
+    });
   }
 
   // processes the data 
-  DataProcessing = (rawJson) => {
-    //TODO: Write code to parse the data
-    let dataArray = rawJson.Data;
-    let allData = [];
-    for(let i = 0 ; i < dataArray.length;i++){
-      for(let j = 0; j < dataArray[i].data.length;j++){
-        allData.push(this.reformatDate(dataArray[i],i,j));
-      }
-    };
+  DataProcessing = (graph) => {
+    let dataArray = graph.NewData;
 
-    if (allData.length > 0) {
-      this.quickSort(allData, 0, (allData.length - 1));
+    //Sort array to ensure all dates are in order
+    if (dataArray > 1) {
+      this.quickSort(dataArray, 0, (dataArray.length - 1))
     }
 
+    //Grabs date from each data point
     let TempDates = [];
-    for (let i = 0; i < allData.length; i++) {
-      TempDates.push(allData[i].data.toDateString());
+    for (let i = 0; i < dataArray.length; i++) {
+      TempDates.push(dataArray[i].Date.toDateString());
     }
 
-    let dates = [...new Set(TempDates.map((date) => date))];
+    //Pulls out only unique date
+    let dates = [...new Set(TempDates)];
     let dateTotals = [];
 
+    //For each unique date, counts how many data points were on that day
     for (let i = 0; i < dates.length; i++) {
       let count = 0;
       for (let j = 0; j < TempDates.length; j++) {
@@ -130,11 +105,12 @@ export default class Dandelion extends React.Component {
     }
 
     this.setState({
+      isLoading:false,
+      graphData:dataArray,
       dateList:dates,
       dateListTotals:dateTotals,
+      title:graph.Title,
     });
-
-    return allData;
   }
 
   // Changes TableData for BarGraph
@@ -156,7 +132,7 @@ export default class Dandelion extends React.Component {
     let i = (low - 1);
 
     for (let j = low; j <= high - 1; j++) {
-      if (arr[j].data < pivot.data) {
+      if (arr[j].Date < pivot.Date) {
         i++;
         this.swap(arr, i, j);
       }
@@ -217,6 +193,11 @@ function GetDandelion({data, dateList, dateTotals, colors, styles}) {
     let dayX = (Math.sin(finalAngle) * radiusInner) + circleX;
     let dayY = (Math.cos(finalAngle) * radiusInner) + circleY;
 
+    if (dateList.length === 1) {
+      dayX = circleX;
+      dayY = circleY;
+    }
+
     dateLocations.push([dayX, dayY]);
     days.push(<Circle cx={dayX} cy={dayY} r={width*0.02} fill={dark}/>)
 
@@ -229,25 +210,26 @@ function GetDandelion({data, dateList, dateTotals, colors, styles}) {
     let dataX = (Math.sin(angle) * radiusOuter) + circleX;
     let dataY = (Math.cos(angle) * radiusOuter) + circleY;
 
-    entries.push(<Circle cx={dataX} cy={dataY} r={width*0.01} fill={colors[data[i].button]}/>);
+    entries.push(<Circle cx={dataX} cy={dataY} r={width*0.01} fill={colors[data[i].ButtonID]}/>);
 
     const dateMatch = (element) => element === date;
-    let date = data[i].data.toDateString();
+    let date = data[i].Date.toDateString();
     let index = dateList.findIndex(dateMatch)
     let dateCoordinates = dateLocations[index];
+
     let dayX = dateCoordinates[0];
     let dayY = dateCoordinates[1];
 
-    spokes.push(<Line x1={dataX} y1={dataY} x2={dayX} y2={dayY} strokeWidth={1.5} stroke={colors[data[i].button]}/>);
+    spokes.push(<Line x1={dataX} y1={dataY} x2={dayX} y2={dayY} strokeWidth={1.5} stroke={colors[data[i].ButtonID]}/>);
   }
 
   return (
     <View>
       <Svg height={height} width={width} key={"Dandelion"}>
-        <Circle cx={circleX} cy={circleY} r={width*.04} fill={dark}/>
         {entries}
         {spokes}
         {days}
+        <Circle cx={circleX} cy={circleY} r={width*.04} fill={dark}/>
       </Svg>
     </View>
   );

@@ -14,7 +14,7 @@ let AsyncDefaults=[{}];
 class AsyncStorageCode {
 
   //put all items into async
-    storeInAsync = (newItem) => {
+  storeInAsync = (newItem) => {
     const stringifiedText = JSON.stringify(newItem);
 
     AsyncStorage.setItem(asyncStorageKey, stringifiedText).catch(err => {
@@ -33,12 +33,29 @@ class AsyncStorageCode {
       
       TextArray=parsedText;
 
+      for (let i = 0; i < TextArray.length; i++) {
+        for (let j = 0; j < TextArray[i].NewData.length; j++) {
+          let date = new Date(TextArray[i].NewData[j].Date);
+          TextArray[i].NewData[j].Date = date;
+        }
+      }
+
     })
     .catch(err => {
       console.warn('Error restoring from async');
       console.warn(err);
     });
   };
+
+  getGraph = (key) => {
+    this.restoreFromAsync;
+    for (let i = 0; i < TextArray.length; i++) {
+      if (TextArray[i].Key == key) {
+        return TextArray[i];
+      }
+    }
+    return;
+  }
 
   //alters async storage when given an item's data and the item's key
   alterAsyncItem = (item) => {
@@ -60,6 +77,17 @@ class AsyncStorageCode {
   this.setAllData();
   };
 
+  updateGraph = (name, desc, type, buttons, key) => {
+    let graph = this.getGraph(key);
+    graph.Title = name;
+    graph.Description = desc;
+    graph.GraphType = type;
+    graph.TempButtons = buttons;
+    console.log(this.getGraph(key));
+
+    this.setAllData();
+  };
+
   //prepare to put it into the place by storing in the text array
   submitHandler = (Title, Description, Type, Buttons) =>{
     if (Description.length === 0) {
@@ -73,6 +101,8 @@ class AsyncStorageCode {
       {ButtonName:Buttons[2], data:[]},
     ];
 
+    let TempDataNew = [];
+
     let TempButtons = [];
     for (let i = 0; i < Buttons.length; i++) {
       TempButtons.push({ButtonID:i, ButtonName:Buttons[i]});
@@ -80,7 +110,8 @@ class AsyncStorageCode {
 
     let Data = TempData;
     let GraphType = Type;
-    const newItem = [{ Key, Title, Description, GraphType, Data, TempButtons}, ...TextArray];
+    let NewData = TempDataNew;
+    const newItem = [{ Key, Title, Description, GraphType, Data, TempButtons, NewData}, ...TextArray];
     TextArray = (newItem);
     this.storeInAsync(newItem);
   };
@@ -159,17 +190,17 @@ class AsyncStorageCode {
   }
   
   // getter for TextArray
-  getTextArray(){
+  getTextArray() {
+    this.restoreFromAsync;
     return TextArray;
   }
 
   // adds data to a prexisting graph
-  addToData(key, newData, buttonNumber){
-    for (let i = 0; i < TextArray.length; i++){
-      if(key == TextArray[i].Key){
-        TextArray[i].Data[buttonNumber].data.push(newData);
-      }
-    }
+  addToData(key, tempDate, newData, buttonNumber){
+    let graph = this.getGraph(key);
+    graph.Data[buttonNumber].data.push(newData);
+    graph.NewData.push(tempDate);
+
     this.setAllData();
   }
 

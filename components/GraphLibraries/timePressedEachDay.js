@@ -128,7 +128,6 @@ descriptionList=[];
             data:dayArray,
           };
           allDays.push(temp);
-          console.log(allDays);
           return allDays;
         }
         return [];

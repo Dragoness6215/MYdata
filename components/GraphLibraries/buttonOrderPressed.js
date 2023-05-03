@@ -15,7 +15,7 @@ import { sin } from 'react-native/Libraries/Animated/Easing.js';
 import { runInThisContext } from 'vm';
 
 
-export default class ButtonOrderGraph extends React.Component {
+export default class ButtonOrder extends React.Component {
 
     // State of the class, data stored in here
     constructor(props) {
