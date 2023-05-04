@@ -40,7 +40,7 @@ import Dandelion from "./components/GraphLibraries/dandelion.js";
 const BleManagerModule = NativeModules.BleManager;
 const bleEmitter = new NativeEventEmitter(BleManagerModule);
 
-let styles = lightStyles;
+let styles = darkStyles;
 
 //List of all available graphs and associated attributes
 //To add graph, add array with name, image, and description fields as shown below
@@ -59,7 +59,6 @@ const graphLibrary = [
 //List of graphs for dropdowns
 const graphOptions = [
 ];
-
 const graphOptionsNew = [
   <Picker.Item label={"Set Graph Type"} value={null} style={styles.pickerDropdown}/>
 ];
@@ -69,11 +68,12 @@ const graphDescriptions = [
 ];
 
 //Populates graphoptions and graphdescriptions from initial list
-graphLibrary.map((graph, key) => {
+for (let i = 0; i < graphLibrary.length; i++) {
+  let graph = graphLibrary[i];
   graphOptions.push(<Picker.Item label={graph.name} value={graph.name} style={styles.pickerDropdown}/>);
   graphOptionsNew.push(<Picker.Item label={graph.name} value={graph.name} style={styles.pickerDropdown}/>);
   graphDescriptions.push(<Text style={styles.tinyText} name={graph.name}> {graph.description} </Text>);
-});
+};
 
 // DON'T FORGET TO ADD TO GRAPHSWITCH IN GRAPHS AS WELL
 
@@ -102,30 +102,27 @@ function LogoTitle() {
 export default class App extends React.Component {
   // Tries to preloads everything
   async getStuff() {
-    let temp = Appearance.getColorScheme();
-    if(temp == 'dark') {
-      styles = darkStyles;
-    }
-    else if(temp == 'light') {
-      styles = lightStyles;
-    }
-    else {
-      styles=darkStyles;
-    }
     //await AsyncCode.resetDefaults();
     await AsyncCode.getDefaults();
-    let defaults = AsyncCode.getAsyncDefaults();
-    GLOBAL.BUTTON0KEY = defaults[0].button0Key;
-    GLOBAL.BUTTON1KEY = defaults[0].button1Key;
-    GLOBAL.BUTTON2KEY = defaults[0].button2Key;
   }
 
   // signals to load the fonts
   //Uncomment AsyncCode.addBigData() to add a large procedurally generated data set
   componentDidMount() {
+    let temp = Appearance.getColorScheme();
+    if(temp == 'light') {
+      styles = lightStyles;
+    }
+    else {
+      styles=darkStyles;
+    }
+
     // AsyncCode.addBigData();
-    LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
     this.getStuff();
+    let defaults = AsyncCode.getAsyncDefaults();
+    GLOBAL.BUTTON0KEY = defaults[0].button0Key;
+    GLOBAL.BUTTON1KEY = defaults[0].button1Key;
+    GLOBAL.BUTTON2KEY = defaults[0].button2Key;
     BleCode.checkPermissions();
   }
 
@@ -208,27 +205,17 @@ function HomeScreen({navigation}) {
   return (
     <View style={styles.container}>
       <ImageSwitch styles={styles}/>
-        {/* <ImageBackground  //controls the graph displayed in the background, future implementation: randomize graph that is displayed
-          style={styles.backgroundImage}
-          source={require('./assets/buttonbackground.png')}
-        > */}
-        <View style={styles.bottomLine}></View>
-        <View>
-          <TouchableWithoutFeedback onPress={() => navigation.navigate('My Graphs')}>
-            <Text style={styles.bigButton}> My Graphs </Text>
-          </TouchableWithoutFeedback>
-        </View>
-        <View>
-          <TouchableWithoutFeedback onPress={() => navigation.navigate('Graph Library')}>
-            <Text style={styles.bigButton}> Graph Library </Text>
-          </TouchableWithoutFeedback>
-        </View>
-        {/*<View>
-          <TouchableWithoutFeedback onPress={() => navigation.navigate('Settings')}>
-              <Text style={styles.button}>Settings</Text>
-          </TouchableWithoutFeedback>
-        </View>*/}
-      {/* </ImageBackground> */}
+      {/* <ImageBackground  //controls the graph displayed in the background, future implementation: randomize graph that is displayed
+        style={styles.backgroundImage}
+        source={require('./assets/buttonbackground.png')}
+      > */}
+      <View style={styles.bottomLine}></View>
+      <TouchableWithoutFeedback onPress={() => navigation.navigate('My Graphs')}>
+        <Text style={styles.bigButton}> My Graphs </Text>
+      </TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={() => navigation.navigate('Graph Library')}>
+        <Text style={styles.bigButton}> Graph Library </Text>
+      </TouchableWithoutFeedback>
     </View>
   );
 }
@@ -561,6 +548,7 @@ function GraphLibrary({navigation}) {
   const [alertText, setAlertText] = useState();
   const [alertTitle, setAlertTitle] = useState();
   const [alertImage, setAlertImage] = useState();
+  
   const [alert, throwAlert] = useState(false);
   const [alertConfirm, throwAlertConfirm] = useState(false);
 
@@ -599,9 +587,9 @@ function GraphLibrary({navigation}) {
           <Text style={styles.title}> Graph Library </Text>
           <View style={styles.barLine}/>
           <View style={styles.fixToText}>
-            {graphLibrary.map((graph, key) => {
+            {graphLibrary.map((graph, i) => {
               return (
-                <View key={key}>
+                <View key={i}>
                   <TouchableWithoutFeedback onPress={() => showAlert(graph)}>
                     <Image source={graph.image} style={styles.graphIcon}/>
                   </TouchableWithoutFeedback>
@@ -1375,9 +1363,9 @@ function GraphSettings({ route, navigation }) {
           </Picker>
 
           <Text style={styles.subheader}> Button Names </Text>
-          {buttons.map((button) => {
+          {buttons.map((button, i) => {
             return (
-              <View>
+              <View key={i}>
                 <TextInput numberOfLines={1} defaultValue={button.ButtonName} style={styles.input} onChangeText={(text) => (editButtons(text, button.ButtonID))} editable maxLength={50}/>
               </View>
             );

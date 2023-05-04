@@ -32,7 +32,6 @@ export default class Dandelion extends React.Component {
   // @param: props, the props passed in from the the parent class
   constructor(props) {
     super(props);
-    console.log(props.rawData);
     this.state = {
       isLoading: true,
       numberOfDays:0,
@@ -46,8 +45,6 @@ export default class Dandelion extends React.Component {
     }
   }
 
-  // used to check if props have updated
-  previousProps;
   // if you integrate data point descriptions, you may use this to store the descriptionData
   descriptionList=[];
 
@@ -56,7 +53,6 @@ export default class Dandelion extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props) {
       this.DataProcessing(this.props.rawData);
-      console.log("Running Update");
     }
   }
 
@@ -166,7 +162,7 @@ export default class Dandelion extends React.Component {
   }
 }
 
-function GetDandelion({data, dateList, dateTotals, colors, styles}) {
+function GetDandelion({data, dateList, dateTotals, colors}) {
   let days = [];
   let spokes = [];
   let entries = [];
@@ -204,7 +200,6 @@ function GetDandelion({data, dateList, dateTotals, colors, styles}) {
     prev = max;
   }
 
-
   for (let i = 0; i < data.length; i++) {
     let angle = i * ((2 * Math.PI) / data.length);
     let dataX = (Math.sin(angle) * radiusOuter) + circleX;
@@ -225,7 +220,7 @@ function GetDandelion({data, dateList, dateTotals, colors, styles}) {
 
   return (
     <View>
-      <Svg height={height} width={width} key={"Dandelion"}>
+      <Svg height={height} width={width}>
         {entries}
         {spokes}
         {days}
