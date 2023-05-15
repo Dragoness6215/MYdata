@@ -127,56 +127,48 @@ class AsyncStorageCode {
 
   // deletes a data point
   removeDataPoint = (key, dataPoint) => {
-    console.log(dataPoint);
-    for (let i =0; i<TextArray.length;i++){
-      if(key==TextArray[i].Key){
-        console.log("Found matching Key");
-        for(let j=0;j<TextArray[i].Data.length;j++){
-          for(let k=0;k<TextArray[i].Data[j].data.length;k++){
-            if( TextArray[i].Data[j].data[k].Year==dataPoint.Year &&
-                TextArray[i].Data[j].data[k].Month==dataPoint.Month &&
-                TextArray[i].Data[j].data[k].Day==dataPoint.Day &&
-                TextArray[i].Data[j].data[k].Hour==dataPoint.Hour &&
-                TextArray[i].Data[j].data[k].Minutes==dataPoint.Minutes &&
-                TextArray[i].Data[j].data[k].Seconds==dataPoint.Seconds &&
-                TextArray[i].Data[j].data[k].Milliseconds==dataPoint.Milliseconds){
-              
-              console.log("Match Found");
-              let temp=TextArray[i].Data[j].data;
-              temp.splice(k,1);
-              this.setAllData();
-              return TextArray[i];
-            }
-          }
-        }
+    let graph = this.getGraph(key);
+    for (let i = 0; i < graph.NewData.length; i++) {
+      if (graph.NewData[i].Date.getTime() == dataPoint.Date.getTime()) {
+        console.log("Match Found.");
+        graph.NewData.splice(i, 1);
+        this.setAllData;
       }
     }
+
+
+    // for (let i =0; i<TextArray.length;i++){
+    //   if(key==TextArray[i].Key){
+    //     console.log("Found matching Key");
+    //     for(let j=0;j<TextArray[i].Data.length;j++){
+    //       for(let k=0;k<TextArray[i].Data[j].data.length;k++){
+    //         if( TextArray[i].Data[j].data[k].Year==dataPoint.Year &&
+    //             TextArray[i].Data[j].data[k].Month==dataPoint.Month &&
+    //             TextArray[i].Data[j].data[k].Day==dataPoint.Day &&
+    //             TextArray[i].Data[j].data[k].Hour==dataPoint.Hour &&
+    //             TextArray[i].Data[j].data[k].Minutes==dataPoint.Minutes &&
+    //             TextArray[i].Data[j].data[k].Seconds==dataPoint.Seconds &&
+    //             TextArray[i].Data[j].data[k].Milliseconds==dataPoint.Milliseconds){
+              
+    //           console.log("Match Found");
+    //           let temp=TextArray[i].Data[j].data;
+    //           temp.splice(k,1);
+    //           this.setAllData();
+    //           return TextArray[i];
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   changeDataPointDescription = (key, dataPoint, description) => {
-    console.log(dataPoint);
-    for (let i =0; i<TextArray.length;i++){
-      if(key==TextArray[i].Key){
-        console.log("Found matching Key");
-        for(let j=0;j<TextArray[i].Data.length;j++){
-          for(let k=0;k<TextArray[i].Data[j].data.length;k++){
-            if( TextArray[i].Data[j].data[k].Year==dataPoint.Year &&
-                TextArray[i].Data[j].data[k].Month==dataPoint.Month &&
-                TextArray[i].Data[j].data[k].Day==dataPoint.Day &&
-                TextArray[i].Data[j].data[k].Hour==dataPoint.Hour &&
-                TextArray[i].Data[j].data[k].Minutes==dataPoint.Minutes &&
-                TextArray[i].Data[j].data[k].Seconds==dataPoint.Seconds &&
-                TextArray[i].Data[j].data[k].Milliseconds==dataPoint.Milliseconds){
-              
-              console.log("Match Found");
-              TextArray[i].Data[j].data[k].Description=description;
-              console.log(TextArray[i].Data[j].data[k])
-              //temp.splice(k,1);
-              this.setAllData();
-              return TextArray[i];
-            }
-          }
-        }
+    let graph = this.getGraph(key);
+    for (let i = 0; i < graph.NewData.length; i++) {
+      if (graph.NewData[i].Date.getTime() == dataPoint.Date.getTime()) {
+        console.log("Match Found.");
+        graph.NewData[i].Description = description;
+        this.setAllData();
       }
     }
   }

@@ -1181,9 +1181,9 @@ function Graph({ route, navigation }) {
           <View style={styles.barLine}></View>
           <Text style={styles.header}> Add Data </Text>
 
-          {GLOBAL.ITEM.TempButtons.map((button, ButtonID) => {
+          {GLOBAL.ITEM.TempButtons.map((button, i) => {
             return (
-              <View>
+              <View key={i}>
                 <TouchableOpacity opacity={0.5} onPress={() => buttonPush(button.ButtonID)}>
                   <Text style={styles.lightButton}> {button.ButtonName} </Text>
                 </TouchableOpacity>
@@ -1417,26 +1417,18 @@ function GraphSettings({ route, navigation }) {
 }
 
 function EditData({navigation}) {
-  const [RawData, setRawData] = useState({});
-  const [curData, setCurData] = useState([
-    { ButtonName:"Button0", data:[0] },
-    { ButtonName:"Button1", data:[0,1] },
-    { ButtonName:"Button2", data:[0,1,2] },
-  ]); 
-  const [filteredData,setFilteredData] = useState([
-    { ButtonName:"Button0", data:[0] },
-    { ButtonName:"Button1", data:[0,1] },
-    { ButtonName:"Button2", data:[0,1,2] },
-  ]);
+  const [RawData, setRawData] = useState(GLOBAL.ITEM);
+  const [curData, setCurData] = useState(GLOBAL.ITEM.NewData); 
+  const [filteredData,setFilteredData] = useState(GLOBAL.ITEM.NewData);
 
-  const [showError, setShowError] = useState(false);
-  const [showAlert, setAlert] = useState(false);
-  const [alertSuccess, throwSuccessAlert] = useState(false);
+  const [alertDelete, throwAlertDelete] = useState(false);
+  const [alertSuccess, throwAlertSuccess] = useState(false);
 
-  const [dataOnTrial, setTrial] = useState({});
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalData, setModalData] = useState({});
-  const [dataPointValue, setDataPointValue] = useState("");
+  const [dataDelete, setDataDelete] = useState();
+  const [modal, throwModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [dataPoint, setDataPoint] = useState();
+  const [dataDesc, setDataDesc] = useState("");
 
   let searchDate = ["","",""];
 
@@ -1449,9 +1441,9 @@ function EditData({navigation}) {
   // Stuff done on page load.
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => {
-      changeData(GLOBAL.ITEM);
-      setCurData(GLOBAL.ITEM.Data);
-      setFilteredData(GLOBAL.ITEM.Data);
+      // changeData(GLOBAL.ITEM);
+      // setCurData(GLOBAL.ITEM.NewData);
+      // setFilteredData(GLOBAL.ITEM.NewData);
     });
     return unsubscribe;
   }, [navigation]);
@@ -1463,83 +1455,57 @@ function EditData({navigation}) {
   }
 
   // flags a point to be deleted
-  const doDeleteThisPoint = () => {
-    let temp = AsyncCode.removeDataPoint(RawData.Key, dataOnTrial);
+  const deleteDataPoint = () => {
+    AsyncCode.removeDataPoint(RawData.Key, dataDelete);
+    throwAlertDelete(false);
+    setCurData(AsyncCode.getGraph(RawData.Key).NewData);
+    setFilteredData(AsyncCode.getGraph(RawData.Key).NewData);
+    GLOBAL.ITEM = AsyncCode.getGraph(RawData.Key);
     //console.log(temp.Data);
-    throwAlert(null);
-    changeData(temp);
-    setCurData(temp.Data);
-    setFilteredData(temp.Data);
-    GLOBAL.ITEM = temp;
-    GLOBAL.BUTTONPRESSED = true;
+    // throwAlert(null);
+    // changeData(temp);
+    // setCurData(temp.NewData);
+    // setFilteredData(temp.NewData);
+    // GLOBAL.ITEM = temp;
+    // GLOBAL.BUTTONPRESSED = true;
   }
-
-  // this throws the Alert
-  const throwAlert = (item) => {
-    setTrial(item);
-    if(showAlert) {
-      setAlert(false);
-    }
-    else {
-      setAlert(true);
-    }
-  };
 
   const updateSearch= async() => {
-    let replaceData = [];
     console.log(searchDate);
-    for(let i = 0; i < curData.length; i++) {
-      let buttonJson = {};
-      let buttonData = [];
-      buttonJson.ButtonName = curData[i].ButtonName;
-      for(let j = 0; j < curData[i].data.length; j++){
-        let matchSearch = false;
-        if(searchDate[0] != "") {
-          if(curData[i].data[j].Day == searchDate[0]) {
-            matchSearch = true;
-          }
-        }
-        if(searchDate[1] != "") {
-          if(curData[i].data[j].Month == searchDate[1]) {
-            matchSearch = true;
-          }
-        }
-        if(searchDate[2] != "") {
-          if(curData[i].data[j].Year == searchDate[2]) {
-            matchSearch = true;
-          }
-        }
-        if(matchSearch) {
-          buttonData.push(curData[i].data[j]);
-          console.log("Match Found: " + curData[i].data[j]);
-        }
-      }
-      buttonJson.data = buttonData;
-      replaceData.push(buttonJson);
-    }
-    if(searchDate[0] != "" || searchDate[1] != "" || searchDate[2] != "") {
-      setFilteredData(replaceData);
+    if (!(searchDate[0] || searchDate[1] || searchDate[2])) {
+      setFilteredData(curData);
     }
     else {
-      setFilteredData(curData);
+      let filter = [];
+      for (let i = 0; i < curData.length; i++) {
+        let matchSearch = false;
+        let dateValues = [curData[i].Date.getDate(), curData[i].Date.getMonth() + 1, curData[i].Date.getFullYear()];
+        for (let j = 0; j < 3; j++) {
+          if (searchDate[j] && searchDate[j] == dateValues[j]) {
+            matchSearch = true;
+          }
+        }
+        if (matchSearch) {
+          filter.push(curData[i]);
+        }
+      }
+      setFilteredData(filter);
     }
   }
 
-  const addDataPointDescription= async(item, description) => {
-    console.log(item);
-    console.log(description);
-    if(description.length >= 1) {
-      setModalVisible(false);
-      setShowError(false);
-      let temp = AsyncCode.changeDataPointDescription(RawData.Key, item, description);
-      setCurData(temp.Data);
-      setFilteredData(temp.Data);
-      GLOBAL.ITEM = temp;
-      throwSuccessAlert(true);
-    }
-    else {
-      setShowError(true);
-    }
+  const addDataPointDescription = async(item, description) => {
+    throwAlertSuccess(true);
+    AsyncCode.changeDataPointDescription(RawData.Key, item, description);
+    setCurData(AsyncCode.getGraph(RawData.Key).NewData);
+    // if(description.length >= 1) {
+    //   setModalVisible(false);
+    //   setShowError(false);
+    //   let temp = AsyncCode.changeDataPointDescription(RawData.Key, item, description);
+    //   setCurData(temp.Data);
+    //   setFilteredData(temp.Data);
+    //   GLOBAL.ITEM = temp;
+    //   throwSuccessAlert(true);
+    // }
   }
 
   return (
@@ -1555,36 +1521,29 @@ function EditData({navigation}) {
           </View>
           <View style={styles.barLine}></View>
 
-          <SectionList
-            sections={filteredData}
-            renderItem={({item}) => (
-              <View style={styles.barLine}>
-              <View style={styles.fixToText}>
-                <Text style={styles.tinyText}> {item.Day + "-" + item.Month + "-" + item.Year + ", " + String(item.Hour).padStart(2, "0") + ":" + String(item.Minutes).padStart(2, "0") + ":" + String(item.Seconds).padStart(2, "0")} </Text>
-                <TouchableWithoutFeedback onPress={() => {setModalData(item), setModalVisible(true)}}>
-                  <Text style={styles.lightButton}> Add Description </Text>
-                </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback onPress={() => {throwAlert(item)}}>
-                  <Text style={styles.warningButton}> Delete </Text>
-                </TouchableWithoutFeedback>
+          {filteredData.map((entry, i) => {
+            return (
+              <View key={i} style={styles.barLine}>
+                <Text style={styles.tinyText}> {entry.Date.toLocaleString()} </Text>
+                <Text style={styles.tinyText}> {"Button: " + RawData.TempButtons[entry.ButtonID].ButtonName} </Text>
+                <View style={styles.fixToText}>
+                  <TouchableWithoutFeedback onPress={() => { setDataPoint(entry); setModalTitle(entry.Date.toLocaleString()); throwModal(true); }}>
+                    <Text style={styles.lightButton}> Add Description </Text>
+                  </TouchableWithoutFeedback>
+                  <TouchableWithoutFeedback onPress={() => { setDataDelete(entry); throwAlertDelete(true); }}>
+                    <Text style={styles.warningButton}> Delete </Text>
+                  </TouchableWithoutFeedback>
+                </View>
               </View>
-              </View>
-            )}
-            renderSectionHeader={({section}) => (
-              <View>
-                <Text style={styles.taskTitle}> {section.ButtonName} </Text>
-              </View>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            stickySectionHeadersEnabled
-          />
+            );
+          })}
           
           <AwesomeAlert
-            show={showAlert}
+            show={alertDelete}
             showProgress={false}
             title="Delete Data"
-            message= {"Are you sure you want to delete this data point?"}
-            closeOnTouchOutside={true}
+            message= {"Are you sure you want to delete this entry?"}
+            closeOnTouchOutside={false}
             closeOnHardwareBackPress={false}
             showCancelButton={true}
             showConfirmButton={true}
@@ -1593,16 +1552,16 @@ function EditData({navigation}) {
             contentContainerStyle={styles.alert}
             messageStyle={styles.alertBody}
             titleStyle={styles.alertText}
-            onConfirmPressed={() => { doDeleteThisPoint(); }}
-            onCancelPressed={()=> { throwAlert(null); }}
+            onConfirmPressed={() => { deleteDataPoint(); }}
+            onCancelPressed={()=> { throwAlertDelete(false); }}
           />
         
           <AwesomeAlert
             show={alertSuccess}
             showProgress={false}
             title="Success"
-            message= {"Graph Changed"}
-            closeOnTouchOutside={true}
+            message= {"Description Added"}
+            closeOnTouchOutside={false}
             closeOnHardwareBackPress={false}
             showCancelButton={false}
             showConfirmButton={true}
@@ -1611,22 +1570,21 @@ function EditData({navigation}) {
             contentContainerStyle={styles.alert}
             messageStyle={styles.alertBody}
             titleStyle={styles.alertText}
-            onConfirmPressed={() => { throwSuccessAlert(false); }}
+            onConfirmPressed={() => { throwAlertSuccess(false); throwModal(false); }}
           />
 
-          <Modal animationType="Slide" transparent={true} visible={modalVisible} onRequestClose={() => { Alert.alert("Modal has been closed."); {/*setModalVisible(false);*/} }}>
+          <Modal animationType="Slide" transparent={true} visible={modal}>
             <View style={styles.modalBox}>
-              <Text style={styles.header}> {modalData.Day + "-" + modalData.Month + "-" + modalData.Year + ", " + modalData.Hour + ":" + modalData.Minutes + ":" + modalData.Seconds} </Text>
-              <Text style={styles.subheader}> Change Description </Text>
-              {showError ? ( <Text style={styles.regularText}> Please add a description</Text> ): null}
+              <Text style={styles.header}> {modalTitle} </Text>
+              <Text style={styles.subheader}> Set Description </Text>
               
-              <TextInput multiline numberOfLines={5} onChangeText={text => setDataPointValue(text)} placeholder="New Description Here" style={styles.input} editable maxLength={5000}/>
+              <TextInput multiline numberOfLines={5} onChangeText={text => setDataDesc(text)} placeholder="Data Description" style={styles.input} editable maxLength={5000}/>
 
               <View style={styles.fixToText}>
-                <TouchableWithoutFeedback onPress={() => (addDataPointDescription(modalData, dataPointValue))}>
+                <TouchableWithoutFeedback onPress={() => (addDataPointDescription(dataPoint, dataDesc))}>
                   <Text style={styles.smallButton}> Submit </Text>
                 </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback onPress={() => (setModalVisible(false))}>
+                <TouchableWithoutFeedback onPress={() => (throwModal(false))}>
                   <Text style={styles.warningButton}> Cancel </Text>
                 </TouchableWithoutFeedback>
               </View>

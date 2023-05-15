@@ -109,7 +109,6 @@ export default class ButtonOrder extends React.Component {
     //     }
     //   }
     // };
-    // this.quickSort(singleArray,0,(singleArray.length-1));
   } 
  
   // Algorithim Implementation modified from : https://www.geeksforgeeks.org/quick-sort/ 

@@ -48,18 +48,27 @@ export default class Dandelion extends React.Component {
   // if you integrate data point descriptions, you may use this to store the descriptionData
   descriptionList=[];
 
+  previousProps;
   // When the passed in value changes, this is called
   // Updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps !== this.props) {
+    if (this.previousProps !== this.props) {
       this.DataProcessing(this.props.rawData);
     }
+    this.previousProps = this.props
   }
 
   // This is Called on load
   // Updates the state for the graph
-  componentDidMount(){
-    this.DataProcessing(this.props.rawData);
+  componentDidMount() {
+    this.forceUpdate();
+    if (this.previousProps) {
+      this.DataProcessing(this.previousProps.rawData);
+    }
+    else {
+      this.DataProcessing(this.props.rawData);
+    }
+    
   }
 
   // This is used to manually reload the state
@@ -82,6 +91,9 @@ export default class Dandelion extends React.Component {
     //Grabs date from each data point
     let TempDates = [];
     for (let i = 0; i < dataArray.length; i++) {
+      if (dataArray[i].Description) {
+        console.log(dataArray[i].Description);
+      }
       TempDates.push(dataArray[i].Date.toDateString());
     }
 
@@ -195,7 +207,7 @@ function GetDandelion({data, dateList, dateTotals, colors}) {
     }
 
     dateLocations.push([dayX, dayY]);
-    days.push(<Circle cx={dayX} cy={dayY} r={width*0.02} fill={dark}/>)
+    days.push(<Circle key={i} cx={dayX} cy={dayY} r={width*0.02} fill={dark}/>)
 
     prev = max;
   }
@@ -205,7 +217,7 @@ function GetDandelion({data, dateList, dateTotals, colors}) {
     let dataX = (Math.sin(angle) * radiusOuter) + circleX;
     let dataY = (Math.cos(angle) * radiusOuter) + circleY;
 
-    entries.push(<Circle cx={dataX} cy={dataY} r={width*0.01} fill={colors[data[i].ButtonID]}/>);
+    entries.push(<Circle key={i} cx={dataX} cy={dataY} r={width*0.01} fill={colors[data[i].ButtonID]}/>);
 
     const dateMatch = (element) => element === date;
     let date = data[i].Date.toDateString();
@@ -215,7 +227,7 @@ function GetDandelion({data, dateList, dateTotals, colors}) {
     let dayX = dateCoordinates[0];
     let dayY = dateCoordinates[1];
 
-    spokes.push(<Line x1={dataX} y1={dataY} x2={dayX} y2={dayY} strokeWidth={1.5} stroke={colors[data[i].ButtonID]}/>);
+    spokes.push(<Line key={i} x1={dataX} y1={dataY} x2={dayX} y2={dayY} strokeWidth={1.5} stroke={colors[data[i].ButtonID]}/>);
   }
 
   return (
