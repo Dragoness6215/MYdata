@@ -396,6 +396,21 @@ export default StyleSheet.create({
         width: 30, 
         height: 30
     },
+    graphIcon:{
+        alignSelf:'center',
+        width: 160, 
+        height: 100,
+    },
+    graphIconBig:{
+        alignSelf:'center',
+        width: 300,
+        height: 200,
+    },
+    backgroundImage:{
+        alignSelf:'center',
+        width: 380,
+        height: 380,
+    }
 })
 
 

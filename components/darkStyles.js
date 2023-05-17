@@ -411,13 +411,13 @@ export default StyleSheet.create({
     },
     graphIcon:{
         alignSelf:'center',
-        width: 160, 
-        height: 100,
+        width: 144, 
+        height: 90,
     },
     graphIconBig:{
         alignSelf:'center',
-        width: 300,
-        height: 200,
+        width: 270,
+        height: 180,
     },
     backgroundImage:{
         alignSelf:'center',

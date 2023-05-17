@@ -979,17 +979,25 @@ function Graph({ route, navigation }) {
   //exports async data to an email
   const exportData = async () => {
     console.log("Called");
-    let tempString = RawData.Title + "\n";
     let tempSubject = RawData.Title + "'s Data";
-    for(let i = 0; i < RawData.Data.length; i++){
-      tempString += RawData.Data[i].ButtonName + " \n"
-      for(let j = 0; j < RawData.Data[i].data.length; j++){
-        let tempDate = "Date: " + RawData.Data[i].data[j].Day + "/" + RawData.Data[i].data[j].Month + "/" + RawData.Data[i].data[j].Year + "\t";
-        tempString += tempDate;
-        let tempTime = "Time: " + RawData.Data[i].data[j].Hour + ":" + RawData.Data[i].data[j].Minutes + "." + RawData.Data[i].data[j].Seconds + "." + RawData.Data[i].data[j].Milliseconds + "\n";
-        tempString+=tempTime;
-      }
+    let tempString = "Graph Name: " + RawData.Title;
+    tempString += "\n\nButtons"
+    for (let i = 0; i < RawData.TempButtons.length; i++) {
+      tempString += "\nButton " + RawData.TempButtons[i].ButtonID + ": '" + RawData.TempButtons[i].ButtonName + "'";
     }
+    tempString += "\n\nData Entries"
+    for (let i = 0; i < RawData.NewData.length; i++) {
+      tempString += "\nData Point: " + RawData.NewData[i].Date.toString() + " | Button: " + RawData.NewData[i].ButtonID;
+    }
+    // for(let i = 0; i < RawData.Data.length; i++){
+    //   tempString += RawData.Data[i].ButtonName + " \n"
+    //   for(let j = 0; j < RawData.Data[i].data.length; j++){
+    //     let tempDate = "Date: " + RawData.Data[i].data[j].Day + "/" + RawData.Data[i].data[j].Month + "/" + RawData.Data[i].data[j].Year + "\t";
+    //     tempString += tempDate;
+    //     let tempTime = "Time: " + RawData.Data[i].data[j].Hour + ":" + RawData.Data[i].data[j].Minutes + "." + RawData.Data[i].data[j].Seconds + "." + RawData.Data[i].data[j].Milliseconds + "\n";
+    //     tempString+=tempTime;
+    //   }
+    // }
     console.log("parsed");
     const to = [] // string or array of email addresses
       email(to, {
@@ -1111,7 +1119,7 @@ function Graph({ route, navigation }) {
         <TouchableOpacity opacity={0.5} onPress={() => { navigateEditData(RawData); throwAlertMenu(false); }}>
           <Text style={styles.lightButton}> Edit Data Points </Text>
         </TouchableOpacity>
-        <TouchableOpacity opacity={0.5} onPress={() => { onImageLoad(); throwAlertMenu(false); }}>
+        <TouchableOpacity opacity={0.5} onPress={() => { exportData(); throwAlertMenu(false); }}>
           <Text style={styles.lightButton}> Export Data </Text>
         </TouchableOpacity>
         <View style={{marginVertical: 15}}/>
