@@ -137,13 +137,12 @@ export default class ChessClock extends React.Component {
 
   render() {
     return (
-      <View style={this.props.styles.container}>
-        <View>
+      <View>
+        <View style={this.props.styles.container}>
           <View style={this.props.styles.border}>
-              <Lines data={this.state.graphData} maxLength={this.state.maxLength} pressHandler={this.whenPressed}></Lines>
+            <Lines data={this.state.graphData} maxLength={this.state.maxLength} pressHandler={this.whenPressed}></Lines>
           </View>
           <Text style={this.props.styles.regularText}> Press on the lines to see more information </Text>
-        </View>
         {/* {this.descriptionList.length > 0 ? (
           <View style={this.props.styles.container}>
           <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
@@ -152,6 +151,8 @@ export default class ChessClock extends React.Component {
           </Table>
         </View>
         ): null} */}
+        </View>
+
         <AwesomeAlert
           show={this.state.showAlert}
           showProgress={false}
@@ -166,9 +167,8 @@ export default class ChessClock extends React.Component {
           contentContainerStyle={this.props.styles.alert}
           messageStyle={this.props.styles.alertBody}
           titleStyle={this.props.styles.alertText}
-          onConfirmPressed={() => {
-            this.setState({showAlert:false});
-        }}/>
+          onConfirmPressed={() => { this.setState({showAlert:false}); }}
+        />
       </View>
     );
   }

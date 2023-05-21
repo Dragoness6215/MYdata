@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native"
-import {Dimensions} from 'react-native';
+import { Dimensions } from 'react-native';
 
 let backgroundColor="#faf5ef";
 let highlight="#63ba83";

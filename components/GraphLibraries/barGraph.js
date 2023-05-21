@@ -157,14 +157,14 @@ export default class BarGraph extends React.Component {
             chartConfig={chartConfig}
           />
         </View>
-        {this.state.tableData.length > 0 ? (
+        {/* {this.state.tableData.length > 0 ? (
           <View style={this.props.styles.container}>
           <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
               <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
               <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
           </Table>
         </View>
-        ): null}
+        ): null} */}
       </View>
     );
   }

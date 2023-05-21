@@ -52,23 +52,17 @@ export default class Dandelion extends React.Component {
   // When the passed in value changes, this is called
   // Updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
-    if (this.previousProps !== this.props) {
+    if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
+      // let newTableData=this.ChangeTableData(tempGraphData);
     }
-    this.previousProps = this.props
   }
 
   // This is Called on load
   // Updates the state for the graph
   componentDidMount() {
-    this.forceUpdate();
-    if (this.previousProps) {
-      this.DataProcessing(this.previousProps.rawData);
-    }
-    else {
-      this.DataProcessing(this.props.rawData);
-    }
-    
+    this.DataProcessing(this.props.rawData);
+    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   // This is used to manually reload the state
