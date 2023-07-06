@@ -78,9 +78,7 @@ export default class Dandelion extends React.Component {
     let dataArray = graph.NewData;
 
     //Sort array to ensure all dates are in order
-    if (dataArray > 1) {
-      this.quickSort(dataArray, 0, (dataArray.length - 1))
-    }
+    this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     //Grabs date from each data point
     let TempDates = [];
@@ -160,8 +158,8 @@ export default class Dandelion extends React.Component {
             dateList={this.state.dateList} 
             dateTotals={this.state.dateListTotals}
             colors={colorArray}
-            styles={this.props.styles}>
-          </GetDandelion>
+            styles={this.props.styles}
+          />
         </View>
       </View>
     );

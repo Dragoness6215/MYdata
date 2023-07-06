@@ -151,6 +151,13 @@ export default StyleSheet.create({
         flexWrap:'wrap',
         overflow: 'visible', 
     },
+
+    timelineText:{
+        color: textColor,
+        textAlign: "left",
+        fontSize: tinyFontSize,
+        fontFamily: minorFont,
+    },
     
     smallLightText:{
         textAlign: "center",

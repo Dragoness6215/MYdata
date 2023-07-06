@@ -29,12 +29,12 @@ import BleCode from './components/BleCode.js';
 // User Graph Imports
 import BarGraph from "./components/GraphLibraries/barGraph.js";
 import HeatMap from './components/GraphLibraries/heatGraph.js';
-import ButtonOrder from "./components/GraphLibraries/buttonOrderPressed.js"
-import TimesPerDay from './components/GraphLibraries/timePressedEachDay.js';
-import FlowerGraph from './components/GraphLibraries/FlowerGraph.js';
+import ButtonOrder from "./components/GraphLibraries/buttonOrder.js"
+import Timeline from './components/GraphLibraries/timeline.js';
+import Flowers from './components/GraphLibraries/flowers.js';
 import Triskelion from './components/GraphLibraries/triskelion.js';
 import ChessClock from './components/GraphLibraries/chessClock.js';
-import ButtonPressedPerDay from './components/GraphLibraries/EachButtonPressedPerDay.js';
+import StockMarket from './components/GraphLibraries/stockMarket.js';
 import Dandelion from "./components/GraphLibraries/dandelion.js";
  
 const BleManagerModule = NativeModules.BleManager;
@@ -1154,34 +1154,12 @@ function Graph({ route, navigation }) {
             <HeatMap  rawData={RawData} key={refreshChild} styles={styles} name="Heat Map" /> 
             <BarGraph rawData={RawData} key={refreshChild} styles={styles} name="Bar Graph"  />
             <ButtonOrder rawData={RawData} key={refreshChild} styles={styles} name="Button Order"  />
-            <TimesPerDay rawData={RawData} key={refreshChild} styles={styles} name="Timeline" />
-            <FlowerGraph rawData={RawData} key={refreshChild} styles={styles} name="Flowers" />
+            <Timeline rawData={RawData} key={refreshChild} styles={styles} name="Timeline" />
+            <Flowers rawData={keyParam} key={refreshChild} styles={styles} name="Flowers" />
             <Triskelion rawData={RawData} key={refreshChild} styles={styles} name="Triskelion" />
             <ChessClock rawData={RawData} key={refreshChild} styles={styles} name="Chess Clock"/>
-            <ButtonPressedPerDay rawData={RawData} key={refreshChild} styles={styles} name="Stock Market"/>
+            <StockMarket rawData={RawData} key={refreshChild} styles={styles} name="Stock Market"/>
             <Dandelion rawData={RawData} key={refreshChild} styles={styles} name="Dandelion" />
-            {/* <View key={refreshChild} name="NoDataYet">{/* Change Graph Type }
-              <Text style={styles.subheader}> Change Graph Type </Text>
-              <Picker style={styles.picker} selectedValue={selectedOption} mode="dropdown"
-                onValueChange={(itemValue, itemIndex) => (setCurGraph(itemValue), setSelected(itemValue))}>
-                {graphOptions}
-              </Picker>
-              <GraphSwitch active={selectedOption}>
-                <Text style={styles.tinyText} key={refreshChild} name="NoDataYet"> No Graph Selected. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Bar Graph"> Displays the number of times each button is pressed. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Heat Map"> Displays the number of times all buttons are pressed for each day. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Button Order"> Displays the order of button pushes. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Timeline"> Displays when buttons are pressed each day. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Flower"> Displays the buttons pressed each day. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Triskelion"> Displays the number of button pairs pressed. </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Chess Clock"> Displays the duration between the same button being pressed.</Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Stock Market"> Displays the number of times each button was pressed each day </Text>
-                <Text style={styles.tinyText} key={refreshChild} name="Dandelion"> Displays the buttons pressed over a week. </Text>
-              </GraphSwitch>
-              <TouchableWithoutFeedback onPress={() => (setActiveComponent(currentGraph), AsyncCode.changeGraphType(currentGraph, RawData.Key), GLOBAL.ITEM.GraphType=currentGraph)}>
-                <Text style={styles.smallButton}> Change Graph Type </Text>
-              </TouchableWithoutFeedback>
-            </View> */}
           </GraphSwitch>
         </ViewShot>
         

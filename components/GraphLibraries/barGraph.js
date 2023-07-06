@@ -45,7 +45,7 @@ export default class BarGraph extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.previousProps != this.props || this.state.isLoading) {
       console.log("Updating Graph");
-      let tempGraphData=this.numberOfTimes(this.props.rawData);
+      let tempGraphData=this.DataProcessing(this.props.rawData);
       this.setState({
         graphData:this.ChangeGraphData(tempGraphData),
         tableData:this.ChangeTableData(tempGraphData),
@@ -57,7 +57,7 @@ export default class BarGraph extends React.Component {
   }
 
   componentDidMount(){
-    let tempGraphData=this.numberOfTimes(GLOBAL.ITEM);
+    let tempGraphData=this.DataProcessing(GLOBAL.ITEM);
       this.setState({
         graphData:this.ChangeGraphData(tempGraphData),
         tableData:this.ChangeTableData(tempGraphData),
@@ -72,8 +72,8 @@ export default class BarGraph extends React.Component {
     });
   }
 
-    // Change GraphData for BarGraph
-    ChangeGraphData = (tempData) => {
+  // Change GraphData for BarGraph
+  ChangeGraphData = (tempData) => {
     //get current state data
     const dataClone = {...this.state.graphData}
     //get parent's passed value
@@ -86,25 +86,25 @@ export default class BarGraph extends React.Component {
 
     //Changes TableData for BarGraph
   ChangeTableData = (tempData) => {
-      let tableDataClone=[];
-      let tempString="";
-      let dataPoint={};
-      for(let i = 0; i<tempData.data.descriptions.length;i++){
-        dataPoint = tempData.data.descriptions[i];
-        tempString=dataPoint.ButtonName+"\n";
-        tempString+=dataPoint.Month+"/"+dataPoint.Day+"/"+dataPoint.Year+"\n";
-        tempString+=dataPoint.Hour+":"+dataPoint.Minutes;
-        let row=[];
-        row[0]=tempString;
-        row[1]=dataPoint.Description;
-        console.log(row);
-        tableDataClone.push(row);
-      }
-      console.log(tableDataClone);
-      return tableDataClone;
+    let tableDataClone=[];
+    let tempString="";
+    let dataPoint={};
+    for(let i = 0; i<tempData.data.descriptions.length;i++){
+      dataPoint = tempData.data.descriptions[i];
+      tempString=dataPoint.ButtonName+"\n";
+      tempString+=dataPoint.Month+"/"+dataPoint.Day+"/"+dataPoint.Year+"\n";
+      tempString+=dataPoint.Hour+":"+dataPoint.Minutes;
+      let row=[];
+      row[0]=tempString;
+      row[1]=dataPoint.Description;
+      console.log(row);
+      tableDataClone.push(row);
+    }
+    console.log(tableDataClone);
+    return tableDataClone;
   }
 
-  numberOfTimes = (rawJson) =>{
+  DataProcessing = (rawJson) =>{
       let parsedJson={
           data:{
               title:"",
@@ -151,8 +151,8 @@ export default class BarGraph extends React.Component {
         <View style={this.props.styles.border}>
           <BarChart
             data={this.state.graphData}
-            width={Dimensions.get("window").width*.75} // from react-native
-            height={Dimensions.get("window").height*.4}
+            width={Dimensions.get("window").width * .75} // from react-native
+            height={Dimensions.get("window").height * .4}
             fromZero={true}
             chartConfig={chartConfig}
           />

@@ -254,40 +254,40 @@ class AsyncStorageCode {
   addBigData(){
     console.log("Adding Big Data");
 
-    let maxLength=100;
+    let maxLength = 20;
 
     const Key = Math.random().toString();
-    let TempData={Data:[
-      {ButtonName:"Button0", data:[]},
-      {ButtonName:"Button1", data:[]},
-      {ButtonName:"Button2", data:[]},
-    ]};
-    let Description="No Description Yet";
-    let Data=TempData.Data;
-    let GraphType='NoDataYet';
-    let Title="Big Data Set"
+    
+    let Description = "No Description Yet";
+    let GraphType = "Dandelion";
+    let Title = "Big Data Set"
+    let NewData = [];
 
-    for(let i = 0; i < maxLength; i++){
-      let day=Math.floor(Math.random()*(6) + 10);
-      let month=4;
-      let year=2023;
-      let hour=Math.floor(Math.random()*24);
-      let minutes=Math.floor(Math.random()*60);
-      let seconds=Math.floor(Math.random()*60);
-      let milliseconds=Math.floor(Math.random()*60);
-      let buttonNum=Math.floor(Math.random()*3);
-      TempData.Data[buttonNum].data.push({Year:year,
-        Month:month,
-        Day:day,
-        Hour:hour,
-        Minutes:minutes,
-        Seconds:seconds,
-        Milliseconds:milliseconds,
-      });
+    for (let i = 0; i < maxLength; i++) {
+      let refDate = new Date();
+      let buttonNum = Math.floor(Math.random() * 3);
+
+      let year = refDate.getFullYear();
+      let month = refDate.getMonth();
+      let day = refDate.getDate() - Math.floor(Math.random() * 7);
+      let hour = Math.floor(Math.random() * 24);
+      let minute = Math.floor(Math.random() * 60);
+      let second = Math.floor(Math.random() * 60);
+      let millisecond = Math.floor(Math.random() * 1000);
+
+      let date = new Date(year, month, day, hour, minute, second, millisecond);
+
+      NewData.push({ButtonID: buttonNum, Date: date});
     }
 
-    const newItem = [{ Title, Data, Key, Description, GraphType}, ...TextArray];
-    TextArray=(newItem);
+    let TempButtons = [
+      {ButtonID:0, ButtonName:"Button 0"},
+      {ButtonID:1, ButtonName:"Button 1"},
+      {ButtonID:2, ButtonName:"Button 2"},
+    ];
+
+    const newItem = [{ Title, Key, Description, GraphType, NewData, TempButtons}, ...TextArray];
+    TextArray = (newItem);
     this.storeInAsync(newItem);
   }
 }

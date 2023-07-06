@@ -175,9 +175,9 @@ export default class ButtonOrder extends React.Component {
           show={this.state.showAlert}
           title={this.state.alertTitle}
           message= {this.state.alertMessage}
-          contentContainerStyle={this.props.styles.alert}
-          messageStyle={this.props.styles.alertBody}
           titleStyle={this.props.styles.alertText}
+          messageStyle={this.props.styles.alertBody}
+          contentContainerStyle={this.props.styles.alert}
           onDismiss={() => { this.setState({showAlert:false}); }}
         />
       </View>
@@ -194,7 +194,7 @@ function GetDots ({data, onDotPressed}) {
   let currentX = radius;
   let currentY = radius;
   for(let i = 0; i < data.length; i++){
-    dots.push(<Circle key={i} cx={currentX} cy={currentY} r={radius} onPress={()=>onDotPressed(data[i])} fill={colorArray[data[i].ButtonID]}/>);
+    dots.push(<Circle key={i} cx={currentX} cy={currentY} r={radius} onPress={() => onDotPressed(data[i])} fill={colorArray[data[i].ButtonID]}/>);
     currentX += radius * 2;
     if(currentX > width){
       currentX = radius;
