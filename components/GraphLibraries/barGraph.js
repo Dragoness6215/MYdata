@@ -30,61 +30,35 @@ export default class BarGraph extends React.Component {
     this.state = {
       isLoading: true,
       title:"Whatever you want",
-      graphData: { // data object for the graph
-        labels: [0,1,2],
-        datasets: [ { data: [0,1,2] } ],
+      graphData: {
+        labels: [],
+        datasets: [ { data: [] } ],
       },
       tableHead: [' Button and Time', ' Description',],
       tableData: [ [] ],
     }
   }
-
-  previousProps;
   // when passed in json changes, this is called
   //updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
-    if (this.previousProps != this.props || this.state.isLoading) {
-      console.log("Updating Graph");
-      let tempGraphData=this.DataProcessing(this.props.rawData);
-      this.setState({
-        graphData:this.ChangeGraphData(tempGraphData),
-        tableData:this.ChangeTableData(tempGraphData),
-        title:this.props.rawData.Title,
-        isLoading:false
-      });
-      this.previousProps=this.props;
+    if (prevProps !== this.props || this.state.isLoading) {
+      this.DataProcessing(this.props.rawData);
+      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
-  componentDidMount(){
-    let tempGraphData=this.DataProcessing(GLOBAL.ITEM);
-      this.setState({
-        graphData:this.ChangeGraphData(tempGraphData),
-        tableData:this.ChangeTableData(tempGraphData),
-        title:GLOBAL.ITEM.Title,
-        isLoading:false
-      });
+  // called on load
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
-  updateData(){
-    this.setState({
-      isLoading:true,
-    });
+  // used to manually reload the state
+  updateData() {
+    this.setState({ isLoading:true });
   }
 
-  // Change GraphData for BarGraph
-  ChangeGraphData = (tempData) => {
-    //get current state data
-    const dataClone = {...this.state.graphData}
-    //get parent's passed value
-    const values = tempData;
-    //copy it over!
-    dataClone.datasets[0].data = values.data.datasets;
-    dataClone.labels=values.data.labels;
-    return dataClone;
-  }
-
-    //Changes TableData for BarGraph
+  //Changes TableData for BarGraph
   ChangeTableData = (tempData) => {
     let tableDataClone=[];
     let tempString="";
@@ -104,48 +78,62 @@ export default class BarGraph extends React.Component {
     return tableDataClone;
   }
 
-  DataProcessing = (rawJson) =>{
-      let parsedJson={
-          data:{
-              title:"",
-              labels:[],
-              datasets:[
-                  {
-                      data:[],
-                  }
-              ]
-          }
-      };
-      //inputing the data into datasets
-      let dataArray = rawJson.Data;
-      let totalStuff=[];
-      let totalLabels=[];
-      let descriptions=[];
-      for(let i = 0 ; i < dataArray.length;i++){
-        let temp1=dataArray[i].data;
-        totalStuff[i]=temp1.length;
-        totalLabels[i]=dataArray[i].ButtonName;
-        for(let j =0; j<dataArray[i].data.length;j++){
-          if(dataArray[i].data[j].Description!=undefined){
-            //console.log(dataArray[i].data[j].Description);
-            let temp=dataArray[i].data[j];
-            temp.ButtonName=dataArray[i].ButtonName;
-            descriptions.push(temp);
-          }
-        }
+  DataProcessing = (graph) => {
+    let dataArray = graph.NewData;
+
+    this.quickSort(dataArray, 0, (dataArray.length - 1));
+
+    let dataLabels = [];
+    let dataCounts = [];
+    for (let i = 0; i < graph.TempButtons.length; i++) {
+      dataLabels.push(graph.TempButtons[i].ButtonName);
+      dataCounts.push(0);
+    }
+
+    for (let i = 0; i < dataArray.length; i++) {
+      dataCounts[dataArray[i].ButtonID]++;
+    }
+    
+    this.setState({
+      graphData: {
+        labels: dataLabels,
+        datasets:[ { data: dataCounts } ]
+      },
+      //tableData:this.ChangeTableData(tempGraphData),
+      title: graph.Title,
+      isLoading: false
+    });
+  }
+
+  quickSort = (arr, low, high) => {
+    if (low < high) {
+      let pi = this.partition(arr, low, high);
+      this.quickSort(arr, low, pi - 1);
+      this.quickSort(arr, pi + 1, high);
+    }
+  }
+
+  partition = (arr, low, high) => {
+    let pivot = arr[high];
+    let i = (low - 1);
+
+    for (let j = low; j <= high - 1; j++) {
+      if (arr[j].Date < pivot.Date) {
+        i++;
+        this.swap(arr, i, j);
       }
-      //console.log(descriptions);
-      parsedJson.data.labels=totalLabels;
-      parsedJson.data.datasets=totalStuff;
-      parsedJson.data.title=rawJson.Title;
-      parsedJson.data.descriptions=descriptions;
-      return parsedJson;
+    }
+    this.swap(arr, i + 1, high);
+    return (i + 1);
+  }
+  
+  swap=(arr,xp, yp)=>{
+    var temp = arr[xp];
+    arr[xp] = arr[yp];
+    arr[yp] = temp;
   }
 
   render() {
-    const state = this.state;
-      // since we're now referencing this.state.data, its value 
-      // will be updated directly when we update the state
     return (
       <View style={this.props.styles.container}>
         <View style={this.props.styles.border}>

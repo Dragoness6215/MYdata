@@ -254,7 +254,7 @@ class AsyncStorageCode {
   addBigData(){
     console.log("Adding Big Data");
 
-    let maxLength = 20;
+    let maxLength = 50;
 
     const Key = Math.random().toString();
     

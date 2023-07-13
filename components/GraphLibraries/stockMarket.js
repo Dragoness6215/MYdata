@@ -1,6 +1,6 @@
 // default imports
-import React, {useEffect, useState, Suspense } from 'react'
-import {View,Text, Dimensions,TouchableWithoutFeedback} from 'react-native';
+import React from 'react'
+import {View, Text, Dimensions, TouchableWithoutFeedback} from 'react-native';
 // standard graph stuff
 import {LineChart,BarChart,PieChart,ProgressChart,ContributionGraph,StackedBarChart,} from "react-native-chart-kit";
 // custom shape stuff
