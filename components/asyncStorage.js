@@ -31,7 +31,7 @@ class AsyncStorageCode {
 
       if (!parsedText || typeof parsedText !== 'object') return;
       
-      TextArray=parsedText;
+      TextArray = parsedText;
 
       for (let i = 0; i < TextArray.length; i++) {
         for (let j = 0; j < TextArray[i].NewData.length; j++) {
@@ -190,7 +190,7 @@ class AsyncStorageCode {
   // adds data to a prexisting graph
   addToData(key, tempDate, newData, buttonNumber){
     let graph = this.getGraph(key);
-    graph.Data[buttonNumber].data.push(newData);
+    //graph.Data[buttonNumber].data.push(newData);
     graph.NewData.push(tempDate);
 
     this.setAllData();

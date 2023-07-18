@@ -45,7 +45,6 @@ export default class Triskelion extends React.Component {
     }
   }
 
-
   // called on load
   componentDidMount(){
     this.DataProcessing(this.props.rawData);

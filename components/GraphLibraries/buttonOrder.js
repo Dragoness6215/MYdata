@@ -84,8 +84,6 @@ export default class ButtonOrder extends React.Component {
     return tableDataClone;
   }
 
-  descriptionList=[];
-
   DataProcessing = (graph) => {
     let dataArray = graph.NewData;
 

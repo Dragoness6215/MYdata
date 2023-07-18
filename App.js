@@ -28,7 +28,7 @@ import BleCode from './components/BleCode.js';
 
 // User Graph Imports
 import BarGraph from "./components/GraphLibraries/barGraph.js";
-import HeatMap from './components/GraphLibraries/heatGraph.js';
+import HeatMap from './components/GraphLibraries/heatMap.js';
 import ButtonOrder from "./components/GraphLibraries/buttonOrder.js"
 import Timeline from './components/GraphLibraries/timeline.js';
 import Flowers from './components/GraphLibraries/flowers.js';
@@ -37,8 +37,8 @@ import ChessClock from './components/GraphLibraries/chessClock.js';
 import StockMarket from './components/GraphLibraries/stockMarket.js';
 import Dandelion from "./components/GraphLibraries/dandelion.js";
  
-const BleManagerModule = NativeModules.BleManager;
-const bleEmitter = new NativeEventEmitter(BleManagerModule);
+// const BleManagerModule = NativeModules.BleManager;
+// const bleEmitter = new NativeEventEmitter(BleManagerModule);
 
 let styles = darkStyles;
 
@@ -60,7 +60,7 @@ const graphLibrary = [
 const graphOptions = [
 ];
 const graphOptionsNew = [
-  <Picker.Item label={"Set Graph Type"} value={null} style={styles.pickerDropdown}/>
+  <Picker.Item key={-1} label={"Set Graph Type"} value={null} style={styles.pickerDropdown}/>
 ];
 
 //List of graph descriptions
@@ -70,9 +70,9 @@ const graphDescriptions = [
 //Populates graphoptions and graphdescriptions from initial list
 for (let i = 0; i < graphLibrary.length; i++) {
   let graph = graphLibrary[i];
-  graphOptions.push(<Picker.Item label={graph.name} value={graph.name} style={styles.pickerDropdown}/>);
-  graphOptionsNew.push(<Picker.Item label={graph.name} value={graph.name} style={styles.pickerDropdown}/>);
-  graphDescriptions.push(<Text style={styles.tinyText} name={graph.name}> {graph.description} </Text>);
+  graphOptions.push(<Picker.Item key={i} label={graph.name} value={graph.name} style={styles.pickerDropdown}/>);
+  graphOptionsNew.push(<Picker.Item key={i} label={graph.name} value={graph.name} style={styles.pickerDropdown}/>);
+  graphDescriptions.push(<Text key={i} style={styles.tinyText} name={graph.name}> {graph.description} </Text>);
 };
 
 // DON'T FORGET TO ADD TO GRAPHSWITCH IN GRAPHS AS WELL
@@ -148,35 +148,29 @@ export default class App extends React.Component {
   }
 }
 
-// Home Screen
-// Navigates to the other pages, and starts loading
+// Home Screen: Navigates to the other pages, and starts loading
 function HomeScreen({navigation}) {
-  const [stateSwitch, updateStateSwitch] = useState(false);
-  const switchState = () => {updateStateSwitch(previousState => !previousState);}
-  
-  // this ensures that the async will be loaded in time for other pages to ensure.
-  // Happens on page load
+
+  //Loads in async storage on page load
   React.useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', (e) => {
-      switchState();
-      AsyncCode.restoreFromAsync();
-    });
+    const unsubscribe = navigation.addListener('focus', (e) => { AsyncCode.restoreFromAsync(); });
     return unsubscribe;
   }, [navigation]);
 
-  //checks if a device is connected before deciding which page between Data Inputs and Select Device
+  //Checks if a bluetooth device is connected and decides where to go next
   const checkAndNavigate = () => {
     if(BleCode.checkPermissions()) {
       if(BleCode.isConnected()) {
         navigation.navigate('Data Inputs');
       }
+      
       else {
         navigation.navigate('Select Device');
       }
     }
+
     else {
       console.log("Wrong permissions");
-      //TODO: THrow alert
     }
   }
 
@@ -184,18 +178,12 @@ function HomeScreen({navigation}) {
     navigation.setOptions({
       headerLeft: () => (
         <TouchableWithoutFeedback onPress={() => {checkAndNavigate()}}>
-          <Image
-            source={require('./assets/SettingsIcon.png')}
-            style={styles.headerIcon}
-          />
+          <Image source={require('./assets/SettingsIcon.png')} style={styles.headerIcon}/>
         </TouchableWithoutFeedback>
       ),
       headerRight: () => (
         <TouchableWithoutFeedback onPress={() => navigation.navigate('About')}>
-          <Image
-            source={require('./assets/InfoIcon.png')}
-            style={styles.headerIcon}
-          />
+          <Image source={require('./assets/InfoIcon.png')} style={styles.headerIcon}/>
         </TouchableWithoutFeedback>
       )
     })
@@ -675,7 +663,7 @@ function SelectData({navigation}) {
     GLOBAL.KEY = item.Key;
     GLOBAL.TITLES = item.Title;
     if(BleCode.isConnected()) {
-      navigation.navigate('Graph');
+      navigation.navigate("Graph", { keyParam: item.Key });
     }
     else {
       throwConnectionAlert(true);
@@ -777,7 +765,7 @@ function SelectData({navigation}) {
 //New Graph Screen Code
 function NewGraph({ route, navigation }) {
   //Updates variables with entered data
-  const {typeParam} = route.params;
+  const { typeParam } = route.params;
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [type, setType] = useState(typeParam);
@@ -913,19 +901,15 @@ function NewGraph({ route, navigation }) {
   )
 }
 
-// Displays a graph.
-// Allows for the export of graphs
-// 
+// Displays a graph
 function Graph({ route, navigation }) {
   // put the json data in here
   const { keyParam } = route.params;
+  let graphTest = AsyncCode.getGraph(keyParam)
 
-
-  const [RawData, setRawData] = useState({ Data:[
-    { ButtonName:"Button0", data:[0] },
-    { ButtonName:"Button1", data:[0,1] },
-    { ButtonName:"Button2", data:[0,1,2] },
-  ]});
+  const [graph, setGraph] = useState(graphTest);
+  const [graphType, setGraphType] = useState(graphTest.GraphType);
+  
   const [activePage, setActiveComponent] = useState("NoDataYet")
   const [selectedOption, setSelected] = useState();
   const [textValue, setTextValue] = useState("Put the new text here");
@@ -945,6 +929,8 @@ function Graph({ route, navigation }) {
   const [thisState, setThisState] = useState({textArray:[], showAlert:false});
   const [tempkey, setKey] = useState("");
 
+  const [descriptions, setDescriptions] = useState([]);
+
   // this automatically checks the data every <MINUTE_MS> milliseconds.
   const MINUTE_MS = 250;
   useEffect(() => {
@@ -955,9 +941,8 @@ function Graph({ route, navigation }) {
   // Stuff done on page load.
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => {
-      setRawData(GLOBAL.ITEM);
-      console.log(GLOBAL.ITEM);
-      setActiveComponent(GLOBAL.ITEM.GraphType);
+      setGraph(AsyncCode.getGraph(keyParam));
+      setGraphType(graph.GraphType);
       toggleRefreshChild();
     });
     return unsubscribe;
@@ -979,15 +964,15 @@ function Graph({ route, navigation }) {
   //exports async data to an email
   const exportData = async () => {
     console.log("Called");
-    let tempSubject = RawData.Title + "'s Data";
-    let tempString = "Graph Name: " + RawData.Title;
+    let tempSubject = graph.Title + "'s Data";
+    let tempString = "Graph Name: " + graph.Title;
     tempString += "\n\nButtons"
-    for (let i = 0; i < RawData.TempButtons.length; i++) {
-      tempString += "\nButton " + RawData.TempButtons[i].ButtonID + ": '" + RawData.TempButtons[i].ButtonName + "'";
+    for (let i = 0; i < graph.TempButtons.length; i++) {
+      tempString += "\nButton " + graph.TempButtons[i].ButtonID + ": '" + graph.TempButtons[i].ButtonName + "'";
     }
     tempString += "\n\nData Entries"
-    for (let i = 0; i < RawData.NewData.length; i++) {
-      tempString += "\nData Point: " + RawData.NewData[i].Date.toString() + " | Button: " + RawData.NewData[i].ButtonID;
+    for (let i = 0; i < graph.NewData.length; i++) {
+      tempString += "\nData Point: " + graph.NewData[i].Date.toString() + " | Button: " + graph.NewData[i].ButtonID;
     }
     // for(let i = 0; i < RawData.Data.length; i++){
     //   tempString += RawData.Data[i].ButtonName + " \n"
@@ -1022,7 +1007,7 @@ function Graph({ route, navigation }) {
       let key = GLOBAL.ITEM.Key;
       let temp1 = AsyncCode.getTextArray();
       const temp2 = temp1.filter(textArray => textArray.Key == key);
-      setRawData(temp2[0]);
+      setGraph(temp2[0]);
       checking = false;
       GLOBAL.BUTTONPRESSED = false;
       console.log("done");
@@ -1100,7 +1085,7 @@ function Graph({ route, navigation }) {
 
   const buttonPush = async (buttonPushed) =>{
     console.log(buttonPushed + " was pushed");
-    let key = RawData.Key;
+    let key = graph.Key;
     const date = new Date();
     const [month, day, year] = [date.getMonth(), date.getDate(), date.getFullYear()];
     const [hour, minutes, seconds, milliseconds] = [date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()];
@@ -1113,10 +1098,10 @@ function Graph({ route, navigation }) {
   const customAlert = () => {
     return (
       <View>
-        <TouchableOpacity opacity={0.5} onPress={() => { navigateGraphSettings(RawData); throwAlertMenu(false); }}>
+        <TouchableOpacity opacity={0.5} onPress={() => { navigateGraphSettings(graph); throwAlertMenu(false); }}>
           <Text style={styles.lightButton}> Graph Settings </Text>
         </TouchableOpacity>
-        <TouchableOpacity opacity={0.5} onPress={() => { navigateEditData(RawData); throwAlertMenu(false); }}>
+        <TouchableOpacity opacity={0.5} onPress={() => { navigateEditData(graph); throwAlertMenu(false); }}>
           <Text style={styles.lightButton}> Edit Data Points </Text>
         </TouchableOpacity>
         <TouchableOpacity opacity={0.5} onPress={() => { exportData(); throwAlertMenu(false); }}>
@@ -1141,26 +1126,28 @@ function Graph({ route, navigation }) {
         </TouchableWithoutFeedback>
       )
     })
-  }, [navigation, RawData]);
+  }, [navigation, graph]);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <ViewShot ref={ref}>
-          <Text style={styles.title}>{RawData.Title}</Text>
-          <Text style={styles.regularText}> {RawData.Description}</Text>
+          <Text style={styles.title}>{graph.Title}</Text>
+          <Text style={styles.regularText}> {graph.Description}</Text>
           
-          <GraphSwitch active={activePage}>
-            <HeatMap  rawData={RawData} key={refreshChild} styles={styles} name="Heat Map" /> 
-            <BarGraph rawData={RawData} key={refreshChild} styles={styles} name="Bar Graph"  />
-            <ButtonOrder rawData={RawData} key={refreshChild} styles={styles} name="Button Order"  />
-            <Timeline rawData={RawData} key={refreshChild} styles={styles} name="Timeline" />
+          <GraphSwitch active={graphType}>
+            <HeatMap  rawData={graph} key={refreshChild} styles={styles} name="Heat Map" /> 
+            <BarGraph rawData={graph} key={refreshChild} styles={styles} name="Bar Graph"  />
+            <ButtonOrder rawData={graph} key={refreshChild} styles={styles} name="Button Order"  />
+            <Timeline rawData={graph} key={refreshChild} styles={styles} name="Timeline" />
             <Flowers rawData={keyParam} key={refreshChild} styles={styles} name="Flowers" />
-            <Triskelion rawData={RawData} key={refreshChild} styles={styles} name="Triskelion" />
-            <ChessClock rawData={RawData} key={refreshChild} styles={styles} name="Chess Clock"/>
-            <StockMarket rawData={RawData} key={refreshChild} styles={styles} name="Stock Market"/>
-            <Dandelion rawData={RawData} key={refreshChild} styles={styles} name="Dandelion" />
+            <Triskelion rawData={graph} key={refreshChild} styles={styles} name="Triskelion" />
+            <ChessClock rawData={graph} key={refreshChild} styles={styles} name="Chess Clock"/>
+            <StockMarket rawData={graph} key={refreshChild} styles={styles} name="Stock Market"/>
+            <Dandelion rawData={graph} key={refreshChild} styles={styles} name="Dandelion" />
           </GraphSwitch>
+
+          {/* (descriptions ? test : null) */}
         </ViewShot>
         
         <View>
@@ -1329,6 +1316,7 @@ function GraphSettings({ route, navigation }) {
 
   const submitChanges = () => {
     AsyncCode.updateGraph(name, desc, type, buttons, keyParam);
+    navigation.navigate("Graph", { keyParam: keyParam });
   }
 
   return (
