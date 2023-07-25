@@ -36,7 +36,8 @@ export default class ChessClock extends React.Component {
       endDate:new Date("2017-04-01"),
       title:"Whatever you want",
       graphData: [],
-      showAlert:false,
+      showAlert: false,
+      alertMessage: "",
       maxLength:0,
       tableHead: [' Column 1', ' Column 2',],
       tableData: [
@@ -83,6 +84,7 @@ export default class ChessClock extends React.Component {
 
   DataProcessing = (graph) =>{
     let dataArray = graph.NewData;
+    let buttons = graph.TempButtons;
     let finalArray = [];
     let maxLength = 0;
     let checked = [];
@@ -101,6 +103,7 @@ export default class ChessClock extends React.Component {
 
           finalArray.push({
             ButtonID: start.ButtonID,
+            ButtonName: buttons[start.ButtonID].ButtonName,
             Duration: duration,
           });
           checked.push(j);
@@ -129,10 +132,11 @@ export default class ChessClock extends React.Component {
   }
 
   whenPressed = (item) => {
-    let tempString = "Button: "+ item.ButtonID + "\nDuration: " + (item.Duration / 1000) + " seconds";
+    console.log(item);
+    let message = `Button: ${item.ButtonName}\nDuration: ${(item.Duration / 1000).toFixed(3)} seconds`;
     this.setState({
-      showAlert:true,
-      selectedData:tempString});
+      showAlert: true,
+      alertMessage: message});
   }
 
   render() {
@@ -155,19 +159,12 @@ export default class ChessClock extends React.Component {
 
         <AwesomeAlert
           show={this.state.showAlert}
-          showProgress={false}
           title={"Data"}
-          message= {this.state.selectedData}
-          closeOnTouchOutside={true}
-          closeOnHardwareBackPress={false}
-          showCancelButton={false}
-          showConfirmButton={true}
-          confirmText="Okay"
-          confirmButtonColor="#63ba83"
-          contentContainerStyle={this.props.styles.alert}
-          messageStyle={this.props.styles.alertBody}
+          message= {this.state.alertMessage}
           titleStyle={this.props.styles.alertText}
-          onConfirmPressed={() => { this.setState({showAlert:false}); }}
+          messageStyle={this.props.styles.alertBody}
+          contentContainerStyle={this.props.styles.alert}
+          onDismiss={() => { this.setState({showAlert:false}); }}
         />
       </View>
     );

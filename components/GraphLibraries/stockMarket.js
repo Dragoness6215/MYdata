@@ -107,7 +107,6 @@ export default class StockMarket extends React.Component {
         maxCount = Math.max(...dayCount);
       }
     }
-    console.log(allDays);
 
     this.setState({
       isLoading: false,
@@ -210,6 +209,10 @@ function EachDataPoint({data, maxCount, buttons, onPress}) {
   let addHeight = width * .1;
   let scale = (width * (7 / 8)) / maxCount;
 
+  console.log("Rendered");
+  console.log(data);
+  console.log(maxCount);
+
   let lines = [];
   for (let i = 0; i < buttons.length; i++) {
     let curHeight = addHeight;
@@ -218,7 +221,6 @@ function EachDataPoint({data, maxCount, buttons, onPress}) {
     for (let j = 0; j < data.length; j++) {
       curHeight += addHeight;
       coordinates += `${(data[j].Counts[i] * scale) + (width / 16)} ${curHeight} `;
-      console.log(`${(data[j].Counts[i] * scale) + (width / 16)} ${curHeight} `);
     }
     lines.push(<Polyline points={coordinates} fill={"none"} stroke={colorArray[i]} strokeWidth={5} strokeLinecap={"round"} onPress={() => onPress(data, i)} key={i}/>)
   }

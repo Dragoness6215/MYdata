@@ -92,7 +92,6 @@ export default class HeatMap extends React.Component {
     }
 
     dateCounts.push({date: currDate, count: count});
-    console.log(dateCounts);
 
     let startDate = new Date(dateCounts[0].date);
     let endDate = new Date();

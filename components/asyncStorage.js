@@ -188,10 +188,9 @@ class AsyncStorageCode {
   }
 
   // adds data to a prexisting graph
-  addToData(key, tempDate, newData, buttonNumber){
+  addToData(key, entry){
     let graph = this.getGraph(key);
-    //graph.Data[buttonNumber].data.push(newData);
-    graph.NewData.push(tempDate);
+    graph.NewData.push(entry);
 
     this.setAllData();
   }

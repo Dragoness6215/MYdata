@@ -85,8 +85,7 @@ export default class Flowers extends React.Component {
     return tableDataClone;
   }
 
-  DataProcessing = (key) => {
-    let graph = AsyncCode.getGraph(key);
+  DataProcessing = (graph) => {
     let dataArray = graph.NewData;
 
     this.quickSort(dataArray, 0, (dataArray.length - 1));
@@ -150,25 +149,10 @@ export default class Flowers extends React.Component {
     arr[yp] = temp;
   }
 
-  onDayPressed = (day) => {
-    // for (let i = 0; i < dates.length; i++) {
-    //   let count = 0;
-    //   for (let j = 0; j < TempDates.length; j++) {
-    //     if (TempDates[j] === dates[i]) {
-    //       count++;
-    //     }
-    //   }
-    //   dateTotals.push(count);
-    // }
-
-    // let buttons = [];
-    // for (let i = 0; i < day.Data.length; i++) {
-    //   buttons.push(day.Data[i].ButtonID);
-    // }
-
+  onDayPressed = (day, buttons) => {
     let description = "";
-    for (let i = 0; i < this.state.buttonNames; i++) {
-      description += `\n${this.state.buttonNames[i]}: ${day.Data.filter((entry) => (entry.ButtonID === i)).length}`;
+    for (let i = 0; i < buttons.length; i++) {
+      description += `\n${buttons[i].ButtonName}: ${day.Data.filter((entry) => (entry.ButtonID === i)).length}`;
     }
     
     this.setState({
@@ -183,7 +167,7 @@ export default class Flowers extends React.Component {
       <View style={this.props.styles.container}>
         {this.toBig ? (<Text style={this.props.styles.subheader}> Data Limit Exceeded, Some Data Will Be Omitted. </Text>): null }
         <View style={this.props.styles.border}>
-          <GetFlowers data={this.state.graphData} pressHandler={this.onDayPressed}></GetFlowers>
+          <GetFlowers data={this.state.graphData} buttons={this.state.buttonNames} pressHandler={this.onDayPressed}></GetFlowers>
         </View>
         <Text style={this.props.styles.regularText}> Press on the flowers to see more information </Text>
         
@@ -210,7 +194,7 @@ export default class Flowers extends React.Component {
   }
 }
 
-function GetFlowers({data, pressHandler}) {
+function GetFlowers({data, buttons, pressHandler}) {
   let flowers = [];
   let stems = [];
   let width = Dimensions.get("window").width*.75;
@@ -221,8 +205,8 @@ function GetFlowers({data, pressHandler}) {
   let strokeWidth = 10;
 
   for (let i = 0; i < data.length; i++) {
-    stems.push(<Line x1={width / 2} y1={((width / 3) * (i + 2))} x2={(width * (whichSide + 2)) / 4} y2={((width / 3) * (i + 1))} strokeWidth={strokeWidth} stroke={darkGreen} strokeLinecap={"round"} key={i} />);
-    flowers.push(<Flower data={data[i]} centerX={(width * (whichSide + 2)) / 4} centerY={((width / 3) * (i + 1))} radius={radius} pressHandler={pressHandler}/>);
+    stems.push(<Line key={i} x1={width / 2} y1={((width / 3) * (i + 2))} x2={(width * (whichSide + 2)) / 4} y2={((width / 3) * (i + 1))} strokeWidth={strokeWidth} stroke={darkGreen} strokeLinecap={"round"}/>);
+    flowers.push(<Flower key={i} data={data[i]} centerX={(width * (whichSide + 2)) / 4} centerY={((width / 3) * (i + 1))} radius={radius} buttons={buttons} pressHandler={pressHandler}/>);
     whichSide *= -1;
   }
 
@@ -237,7 +221,7 @@ function GetFlowers({data, pressHandler}) {
   )
 }
 
-function Flower({data, centerX, centerY, radius, pressHandler}) {
+function Flower({data, centerX, centerY, radius, buttons, pressHandler}) {
   let petals = [];
   let strokeWidth = Math.max(1.5, Math.min(90 / (data.Data.length + 1), 20));
   
@@ -247,13 +231,13 @@ function Flower({data, centerX, centerY, radius, pressHandler}) {
     let petalX = Math.sin(angle) * radius;
     let petalY = Math.cos(angle) * radius;
     
-    petals.push(<Line x1={centerX} y1={centerY} x2={centerX + petalX} y2={centerY - petalY} strokeWidth={strokeWidth} stroke={colorArray[data.Data[i].ButtonID]}/>);
+    petals.push(<Line key={i} x1={centerX} y1={centerY} x2={centerX + petalX} y2={centerY - petalY} strokeWidth={strokeWidth} stroke={colorArray[data.Data[i].ButtonID]}/>);
   }
 
   return(
     <View>
       {petals}
-      <Circle cx={centerX} cy={centerY} r={radius / 3} fill={dark} onPress={() => pressHandler(data)}/>
+      <Circle cx={centerX} cy={centerY} r={radius / 3} fill={dark} onPress={() => pressHandler(data, buttons)}/>
     </View>
   )
 }

@@ -114,10 +114,10 @@ export default class App extends React.Component {
       styles = lightStyles;
     }
     else {
-      styles=darkStyles;
+      styles = darkStyles;
     }
 
-    // AsyncCode.addBigData();
+    //AsyncCode.addBigData();
     this.getStuff();
     let defaults = AsyncCode.getAsyncDefaults();
     GLOBAL.BUTTON0KEY = defaults[0].button0Key;
@@ -132,16 +132,16 @@ export default class App extends React.Component {
       <NavigationContainer animationEnabled={true} animationTypeForReplace={"push"}>
         <Stack.Navigator initialRouteName="Home">
           <Stack.Screen name="Home"           component={HomeScreen}      options={backgroundDefault}/>
+          <Stack.Screen name="Select Device"  component={SelectDevice}    options={backgroundDefault}/>
+          <Stack.Screen name="Data Inputs"    component={ButtonSelection} options={backgroundDefault}/>
           <Stack.Screen name="Graph Library"  component={GraphLibrary}    options={backgroundDefault}/>
           <Stack.Screen name="My Graphs"      component={SelectData}      options={backgroundDefault}/>
           <Stack.Screen name="New Graph"      component={NewGraph}        options={backgroundDefault} initialParams={{ typeParam: null }}/>
-          <Stack.Screen name="Settings"       component={Settings}        options={backgroundDefault}/>
-          <Stack.Screen name="Select Device"  component={SelectDevice}    options={backgroundDefault}/>
-          <Stack.Screen name="Data Inputs"    component={ButtonSelection} options={backgroundDefault}/>
           <Stack.Screen name="Graph"          component={Graph}           options={backgroundDefault}/>
           <Stack.Screen name="Graph Settings" component={GraphSettings}   options={backgroundDefault}/>
           <Stack.Screen name="Edit Data"      component={EditData}        options={backgroundDefault}/>
           <Stack.Screen name="About"          component={About}           options={backgroundDefault}/>
+          <Stack.Screen name="Settings"       component={Settings}        options={backgroundDefault}/>
         </Stack.Navigator>
       </NavigationContainer>
     );
@@ -153,7 +153,9 @@ function HomeScreen({navigation}) {
 
   //Loads in async storage on page load
   React.useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', (e) => { AsyncCode.restoreFromAsync(); });
+    const unsubscribe = navigation.addListener('focus', (e) => { 
+      AsyncCode.restoreFromAsync();
+    });
     return unsubscribe;
   }, [navigation]);
 
@@ -553,16 +555,13 @@ function GraphLibrary({navigation}) {
   const toNewGraph = () => {
     throwAlertConfirm(false); 
     throwAlert(false);
-    navigation.navigate("New Graph", { typeParam: graphType });
+    navigation.replace("New Graph", { typeParam: graphType });
   }
 
   const customAlert = () => {
     return (
       <View>
-        <Image
-          source={alertImage}
-          style={styles.graphIconBig}
-        />
+        <Image source={alertImage} style={styles.graphIconBig}/>
         <Text style={styles.alertBody}> {alertText} </Text>
       </View>
     )
@@ -591,9 +590,6 @@ function GraphLibrary({navigation}) {
         <AwesomeAlert
           show={alert}
           title={alertTitle}
-          closeOnTouchOutside={true}
-          closeOnHardwareBackPress={false}
-          showCancelButton={false}
           showConfirmButton={true}
           confirmText={"Use This Graph"}
           confirmButtonColor="#63ba83"
@@ -610,7 +606,7 @@ function GraphLibrary({navigation}) {
           title = "Confirm Submission"
           message= "Do You Want to Make a New Graph?"
           closeOnTouchOutside={false}
-          closeOnHardwareBackPress={true}
+          closeOnHardwareBackPress={false}
           showConfirmButton={true}
           showCancelButton={true}
           confirmButtonColor="#63ba83"
@@ -644,7 +640,7 @@ function SelectData({navigation}) {
   const [connectionAlert, throwConnectionAlert] = useState(false);
   
   // states for the alerts
-  const [tempkey, setKey] = useState("");
+  const [key, setKey] = useState("");
   const [text, setText]= useState('');
 
   //on Load; restore stuff from Async Storage
@@ -659,13 +655,11 @@ function SelectData({navigation}) {
   // used to change pages and pass the appropriate information to the graph page.
   // Param, the raw file of the graph being navigated too
   const navigateAndSendDataGraph = (item) =>{
-    GLOBAL.ITEM = item;
-    GLOBAL.KEY = item.Key;
-    GLOBAL.TITLES = item.Title;
     if(BleCode.isConnected()) {
       navigation.navigate("Graph", { keyParam: item.Key });
     }
     else {
+      setKey(item.Key);
       throwConnectionAlert(true);
     }
   }
@@ -674,16 +668,16 @@ function SelectData({navigation}) {
   // if toDo = "Remove", removes the alert. otherwise dismisses the alert
   const updateData = async(toDo) => {
     if(toDo == "remove") {
-      AsyncCode.removeItem(tempkey);
-      if(GLOBAL.BUTTON0KEY == tempkey) {
+      AsyncCode.removeItem(key);
+      if(GLOBAL.BUTTON0KEY == key) {
         Console.log("Same Key");
         GLOBAL.BUTTON0KEY == null;
       }
-      if(GLOBAL.BUTTON1KEY == tempkey) {
+      if(GLOBAL.BUTTON1KEY == key) {
         Console.log("Same Key");
         GLOBAL.BUTTON0KEY == null;
       }
-      if(GLOBAL.BUTTON2KEY == tempkey) {
+      if(GLOBAL.BUTTON2KEY == key) {
         Console.log("Same Key");
         GLOBAL.BUTTON0KEY == null;
       }
@@ -702,7 +696,7 @@ function SelectData({navigation}) {
             return (
               <View key={i} style={styles.bottomLine}>
                 <View style={styles.buttonBox}>
-                  <TouchableWithoutFeedback onPress={() => {navigateAndSendDataGraph(graph);}}>
+                  <TouchableWithoutFeedback onPress={() => { navigateAndSendDataGraph(graph); }}>
                     <Text style={styles.button}> {graph.Title} </Text>
                   </TouchableWithoutFeedback>
                   <TouchableWithoutFeedback onPress={() => {setKey(graph.Key); throwAlert(true); setAsyncStorage(AsyncCode.getTextArray()); refresh=false;}}>
@@ -754,7 +748,7 @@ function SelectData({navigation}) {
           contentContainerStyle={styles.alert}
           messageStyle={styles.alertBody}
           titleStyle={styles.alertText}
-          onConfirmPressed={() => { throwConnectionAlert(false); navigation.navigate('Graph', {keyParam: GLOBAL.KEY}) ; }}
+          onConfirmPressed={() => { throwConnectionAlert(false); navigation.navigate('Graph', {keyParam: key}) ; }}
           onDismiss={() => { throwConnectionAlert(false); }}
         />
       </ScrollView>
@@ -764,36 +758,29 @@ function SelectData({navigation}) {
 
 //New Graph Screen Code
 function NewGraph({ route, navigation }) {
-  //Updates variables with entered data
   const { typeParam } = route.params;
+  
+  //Updates variables with entered data
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [type, setType] = useState(typeParam);
-  const [butt0, setButt0] = useState("Button 0");
-  const [butt1, setButt1] = useState("Button 1");
-  const [butt2, setButt2] = useState("Button 2");
+  const [buttons, setButtons] = useState(["Button 0", "Button 1", "Button 2"]);
 
   //States for the alerts
   const [alertText, setAlertText] = useState("");
   const [alert, throwAlert] = useState(false);
   const [alertConfirm, throwAlertConfirm] = useState(false);
 
-  const [thisState, setThisState]= useState({textArray: []});
+  const [asyncStorage, setAsyncStorage] = useState();
   
   //On load, restore data from storage
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       AsyncCode.restoreFromAsync();
-      setThisState({textArray:AsyncCode.getTextArray()});
+      setAsyncStorage(AsyncCode.getTextArray());
     });
     return unsubscribe;
   }, [navigation]);
-
-  //Updates the data in the storage 
-  const updateData = async() => {
-    AsyncCode.restoreFromAsync();
-    setThisState({showAlert:false, textArray:AsyncCode.getTextArray()});
-  }
 
   //Checks if the entered title is valid
   const checkGraph = () => {
@@ -811,9 +798,9 @@ function NewGraph({ route, navigation }) {
       return;
     }
     
-    for (let i = 0; i < thisState.textArray.length; i++) {
-      console.log(thisState.textArray[i].Title);
-      if(name == thisState.textArray[i].Title) {
+    for (let i = 0; i < asyncStorage.length; i++) {
+      console.log(asyncStorage[i].Title);
+      if(name == asyncStorage[i].Title) {
         setAlertText("Graph Title Already In Use");
         throwAlert(true);
         console.log("Same Name");
@@ -824,12 +811,16 @@ function NewGraph({ route, navigation }) {
     throwAlertConfirm(true);
   }
 
+  const updateButtons = (text, index) => {
+    let tempButtons = buttons;
+    tempButtons[index] = text;
+    setButtons(tempButtons);
+  }
+
   //Adds the new graph to storage and sends user back to graph list
   const addGraph = () => {
-    let buttons = [butt0, butt1, butt2];
     AsyncCode.submitHandler(name, desc, type, buttons);
-    updateData();
-    navigation.navigate('My Graphs');
+    navigation.replace('My Graphs');
   }
   
   return (
@@ -850,9 +841,13 @@ function NewGraph({ route, navigation }) {
           </Picker>
 
           <Text style={styles.subheader}> Button Names </Text>
-          <TextInput multiline numberOfLines={1} placeholder={"Button 0"} style={styles.input} onChangeText={setButt0} editable maxLength={50}/>
-          <TextInput multiline numberOfLines={1} placeholder={"Button 1"} style={styles.input} onChangeText={setButt1} editable maxLength={50}/>
-          <TextInput multiline numberOfLines={1} placeholder={"Button 2"} style={styles.input} onChangeText={setButt2} editable maxLength={50}/>
+          {buttons.map((button, i) => {
+            return (
+              <View key={i}>
+                <TextInput placeholder={`Button ${i}`} style={styles.input} onChangeText={(text) => updateButtons(text, i)} editable maxLength={50}/>
+              </View>
+            );
+          })}
           
           <TouchableWithoutFeedback onPress={() => { checkGraph() }}>
             <Text style={styles.smallButton}> Submit </Text>
@@ -879,7 +874,6 @@ function NewGraph({ route, navigation }) {
         {/*Confirmation of All Data Fields*/}
         <AwesomeAlert
           show = {alertConfirm}
-          showProgress = {false}
           title = "Confirm Submission"
           message= "Are All Fields Correct?"
           closeOnTouchOutside={false}
@@ -905,31 +899,21 @@ function NewGraph({ route, navigation }) {
 function Graph({ route, navigation }) {
   // put the json data in here
   const { keyParam } = route.params;
-  let graphTest = AsyncCode.getGraph(keyParam)
+  let graphParam = AsyncCode.getGraph(keyParam);
 
-  const [graph, setGraph] = useState(graphTest);
-  const [graphType, setGraphType] = useState(graphTest.GraphType);
+  const [graph, setGraph] = useState(graphParam);
+  const [graphType, setGraphType] = useState(graphParam.GraphType);
   
-  const [activePage, setActiveComponent] = useState("NoDataYet")
-  const [selectedOption, setSelected] = useState();
-  const [textValue, setTextValue] = useState("Put the new text here");
   const [refreshChild, setRefreshChild] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [currentDescription, setDescription] = useState("");
-  const [currentGraph, setCurGraph ] = useState("");
   const [showAlert, setAlert] = useState(false);
   const [alertFailed, setFailedAlert] = useState(false);
-  let buttonList = [];
 
   //States for the alerts
-  const [alertText, setAlertText] = useState("");
   const [alertMenu, throwAlertMenu] = useState(false);
   const [alertDelete, throwAlertDelete] = useState(false);
 
   const [thisState, setThisState] = useState({textArray:[], showAlert:false});
-  const [tempkey, setKey] = useState("");
-
-  const [descriptions, setDescriptions] = useState([]);
 
   // this automatically checks the data every <MINUTE_MS> milliseconds.
   const MINUTE_MS = 250;
@@ -942,7 +926,7 @@ function Graph({ route, navigation }) {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => {
       setGraph(AsyncCode.getGraph(keyParam));
-      setGraphType(graph.GraphType);
+      setGraphType(graphParam.GraphType);
       toggleRefreshChild();
     });
     return unsubscribe;
@@ -964,31 +948,23 @@ function Graph({ route, navigation }) {
   //exports async data to an email
   const exportData = async () => {
     console.log("Called");
-    let tempSubject = graph.Title + "'s Data";
-    let tempString = "Graph Name: " + graph.Title;
-    tempString += "\n\nButtons"
+    let subject = `${graph.Title}'s Data`;
+    let message = `"Graph Name: ${graph.Title}`;
+    message += "\n\nButtons"
     for (let i = 0; i < graph.TempButtons.length; i++) {
-      tempString += "\nButton " + graph.TempButtons[i].ButtonID + ": '" + graph.TempButtons[i].ButtonName + "'";
+      message += `\nButton ${graph.TempButtons[i].ButtonID}: '${graph.TempButtons[i].ButtonName}'`;
     }
-    tempString += "\n\nData Entries"
+    message += "\n\nData Entries"
     for (let i = 0; i < graph.NewData.length; i++) {
-      tempString += "\nData Point: " + graph.NewData[i].Date.toString() + " | Button: " + graph.NewData[i].ButtonID;
+      message += `"\nData Point: ${graph.NewData[i].Date.toLocaleString()} | Button: ${graph.NewData[i].ButtonID}`;
     }
-    // for(let i = 0; i < RawData.Data.length; i++){
-    //   tempString += RawData.Data[i].ButtonName + " \n"
-    //   for(let j = 0; j < RawData.Data[i].data.length; j++){
-    //     let tempDate = "Date: " + RawData.Data[i].data[j].Day + "/" + RawData.Data[i].data[j].Month + "/" + RawData.Data[i].data[j].Year + "\t";
-    //     tempString += tempDate;
-    //     let tempTime = "Time: " + RawData.Data[i].data[j].Hour + ":" + RawData.Data[i].data[j].Minutes + "." + RawData.Data[i].data[j].Seconds + "." + RawData.Data[i].data[j].Milliseconds + "\n";
-    //     tempString+=tempTime;
-    //   }
-    // }
     console.log("parsed");
+    
     const to = [] // string or array of email addresses
       email(to, {
         // Optional additional arguments
-        subject: tempSubject,
-        body: tempString,
+        subject: subject,
+        body: message,
         checkCanOpen: false // Call Linking.canOpenURL prior to Linking.openURL
       }).catch(() => {
         setFailedAlert(true);
@@ -1004,7 +980,7 @@ function Graph({ route, navigation }) {
     }
     if(GLOBAL.BUTTONPRESSED){
       checking = true;
-      let key = GLOBAL.ITEM.Key;
+      let key = graph.Key;
       let temp1 = AsyncCode.getTextArray();
       const temp2 = temp1.filter(textArray => textArray.Key == key);
       setGraph(temp2[0]);
@@ -1051,47 +1027,37 @@ function Graph({ route, navigation }) {
 
   // used to update GLOBAL data and navigate to alter data
   const navigateGraphSettings = (item) => {
-    // GLOBAL.ITEM = item;
-    // GLOBAL.KEY = item.Key;
-    // GLOBAL.TITLES = item.Title;
     navigation.navigate('Graph Settings', { keyParam: item.Key });
   }
 
   const navigateEditData = (item) => {
-    GLOBAL.ITEM = item;
-    GLOBAL.KEY = item.Key;
-    GLOBAL.TITLES = item.Title;
-    navigation.navigate('Edit Data');
+    navigation.navigate('Edit Data', { keyParam: item.Key });
   }
 
   const deleteGraph = () => {
-    AsyncCode.removeItem(tempkey);
-    if(GLOBAL.BUTTON0KEY == tempkey) {
+    AsyncCode.removeItem(keyParam);
+    if(GLOBAL.BUTTON0KEY == keyParam) {
       Console.log("Same Key");
       GLOBAL.BUTTON0KEY == null;
     }
-    if(GLOBAL.BUTTON1KEY == tempkey) {
+    if(GLOBAL.BUTTON1KEY == keyParam) {
       Console.log("Same Key");
       GLOBAL.BUTTON0KEY == null;
     }
-    if(GLOBAL.BUTTON2KEY == tempkey) {
+    if(GLOBAL.BUTTON2KEY == keyParam) {
       Console.log("Same Key");
       GLOBAL.BUTTON0KEY == null;
     }
     AsyncCode.restoreFromAsync();
     setThisState({showAlert:false, textArray:AsyncCode.getTextArray()});
-    navigation.navigate("My Graphs")
+    navigation.pop();
   }
 
   const buttonPush = async (buttonPushed) =>{
     console.log(buttonPushed + " was pushed");
-    let key = graph.Key;
-    const date = new Date();
-    const [month, day, year] = [date.getMonth(), date.getDate(), date.getFullYear()];
-    const [hour, minutes, seconds, milliseconds] = [date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds()];
-    const tempJson = {Year:year, Month:month, Day:day, Hour:hour, Minutes:minutes, Seconds:seconds, Milliseconds:milliseconds};
-    const tempDate = {Date: date, ButtonID: buttonPushed};
-    AsyncCode.addToData(key, tempDate, tempJson, buttonPushed);
+    let date = new Date();
+    let entry = {Date: date, ButtonID: buttonPushed};
+    AsyncCode.addToData(keyParam, entry);
     GLOBAL.BUTTONPRESSED = true;
   }
 
@@ -1108,7 +1074,7 @@ function Graph({ route, navigation }) {
           <Text style={styles.lightButton}> Export Data </Text>
         </TouchableOpacity>
         <View style={{marginVertical: 15}}/>
-        <TouchableOpacity opacity={0.5} onPress={() => { setKey(GLOBAL.KEY); throwAlertMenu(false); throwAlertDelete(true); }}>
+        <TouchableOpacity opacity={0.5} onPress={() => { throwAlertMenu(false); throwAlertDelete(true); }}>
           <Text style={styles.warningButton}> Delete Graph </Text>
         </TouchableOpacity>
       </View>
@@ -1136,25 +1102,23 @@ function Graph({ route, navigation }) {
           <Text style={styles.regularText}> {graph.Description}</Text>
           
           <GraphSwitch active={graphType}>
-            <HeatMap  rawData={graph} key={refreshChild} styles={styles} name="Heat Map" /> 
+            <HeatMap rawData={graph} key={refreshChild} styles={styles} name="Heat Map" /> 
             <BarGraph rawData={graph} key={refreshChild} styles={styles} name="Bar Graph"  />
             <ButtonOrder rawData={graph} key={refreshChild} styles={styles} name="Button Order"  />
             <Timeline rawData={graph} key={refreshChild} styles={styles} name="Timeline" />
-            <Flowers rawData={keyParam} key={refreshChild} styles={styles} name="Flowers" />
+            <Flowers rawData={graph} key={refreshChild} styles={styles} name="Flowers" />
             <Triskelion rawData={graph} key={refreshChild} styles={styles} name="Triskelion" />
             <ChessClock rawData={graph} key={refreshChild} styles={styles} name="Chess Clock"/>
             <StockMarket rawData={graph} key={refreshChild} styles={styles} name="Stock Market"/>
             <Dandelion rawData={graph} key={refreshChild} styles={styles} name="Dandelion" />
           </GraphSwitch>
-
-          {/* (descriptions ? test : null) */}
         </ViewShot>
         
         <View>
           <View style={styles.barLine}></View>
           <Text style={styles.header}> Add Data </Text>
 
-          {GLOBAL.ITEM.TempButtons.map((button, i) => {
+          {graph.TempButtons.map((button, i) => {
             return (
               <View key={i}>
                 <TouchableOpacity opacity={0.5} onPress={() => buttonPush(button.ButtonID)}>
@@ -1256,15 +1220,15 @@ function GraphSettings({ route, navigation }) {
   const [alert, throwAlert] = useState(false);
   const [alertConfirm, throwAlertConfirm] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
-  const [alertText, setAlertText]=useState("");
+  const [alertText, setAlertText] = useState("");
 
   const [asyncStorage, setAsyncStorage]= useState([]);
 
-  // Used to save the data to asnyc when the page is left
-  React.useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {});
-    return unsubscribe;
-  }, [navigation]);
+  // // Used to save the data to asnyc when the page is left
+  // React.useEffect(() => {
+  //   const unsubscribe = navigation.addListener('beforeRemove', (e) => {});
+  //   return unsubscribe;
+  // }, [navigation]);
 
   // Stuff done on page load.
   React.useEffect(() => {
@@ -1278,6 +1242,15 @@ function GraphSettings({ route, navigation }) {
     let ButtonsTemp = buttons;
     ButtonsTemp[id].ButtonName = text;
     setButtons(ButtonsTemp);
+  }
+
+  //Code to be added to allow adding/removing buttons
+  const addButtons = () => {
+    if (buttons.length == 5) {
+      setAlertTitle("Button Limit Reached");
+      setAlertText("Maximum Limit Is Five Buttons");
+      throwAlert(true);
+    }
   }
 
   const checkGraph = () => {
@@ -1316,7 +1289,7 @@ function GraphSettings({ route, navigation }) {
 
   const submitChanges = () => {
     AsyncCode.updateGraph(name, desc, type, buttons, keyParam);
-    navigation.navigate("Graph", { keyParam: keyParam });
+    navigation.pop();
   }
 
   return (
@@ -1390,10 +1363,12 @@ function GraphSettings({ route, navigation }) {
   );
 }
 
-function EditData({navigation}) {
-  const [RawData, setRawData] = useState(GLOBAL.ITEM);
-  const [curData, setCurData] = useState(GLOBAL.ITEM.NewData); 
-  const [filteredData,setFilteredData] = useState(GLOBAL.ITEM.NewData);
+function EditData({ route, navigation }) {
+  const { keyParam } = route.params;
+  let graph = AsyncCode.getGraph(keyParam);
+
+  const [curData, setCurData] = useState(graph.NewData);
+  const [filteredData, setFilteredData] = useState(graph.NewData);
 
   const [alertDelete, throwAlertDelete] = useState(false);
   const [alertSuccess, throwAlertSuccess] = useState(false);
@@ -1404,7 +1379,9 @@ function EditData({navigation}) {
   const [dataPoint, setDataPoint] = useState();
   const [dataDesc, setDataDesc] = useState("");
 
-  let searchDate = ["","",""];
+  const [searchDate, setSearchDate] = useState(["", "", ""]);
+  let placeholders = ["Day", "Month", "Year"];
+  let lengths = [2, 2, 4];
 
   // Used to save the data to asnyc when the page is left
   React.useEffect(() => {
@@ -1424,17 +1401,17 @@ function EditData({navigation}) {
 
   // changes the rawData
   // params data is the data the raw data will be set too
-  const changeData = (data) => {
-    setRawData(data);
-  }
+  // const changeData = (data) => {
+  //   setRawData(data);
+  // }
 
   // flags a point to be deleted
   const deleteDataPoint = () => {
-    AsyncCode.removeDataPoint(RawData.Key, dataDelete);
+    AsyncCode.removeDataPoint(keyParam, dataDelete);
     throwAlertDelete(false);
-    setCurData(AsyncCode.getGraph(RawData.Key).NewData);
-    setFilteredData(AsyncCode.getGraph(RawData.Key).NewData);
-    GLOBAL.ITEM = AsyncCode.getGraph(RawData.Key);
+    setCurData(AsyncCode.getGraph(keyParam).NewData);
+    filterData();
+    // GLOBAL.ITEM = AsyncCode.getGraph(RawData.Key);
     //console.log(temp.Data);
     // throwAlert(null);
     // changeData(temp);
@@ -1444,33 +1421,37 @@ function EditData({navigation}) {
     // GLOBAL.BUTTONPRESSED = true;
   }
 
-  const updateSearch= async() => {
-    console.log(searchDate);
-    if (!(searchDate[0] || searchDate[1] || searchDate[2])) {
-      setFilteredData(curData);
-    }
-    else {
-      let filter = [];
-      for (let i = 0; i < curData.length; i++) {
-        let matchSearch = false;
-        let dateValues = [curData[i].Date.getDate(), curData[i].Date.getMonth() + 1, curData[i].Date.getFullYear()];
-        for (let j = 0; j < 3; j++) {
-          if (searchDate[j] && searchDate[j] == dateValues[j]) {
-            matchSearch = true;
-          }
-        }
-        if (matchSearch) {
-          filter.push(curData[i]);
+  const updateSearch = (date, index) => {
+    let tempSearch = searchDate;
+    tempSearch[index] = date;
+    setSearchDate(tempSearch);
+  }
+
+  const filterData = async() => {
+    let filter = [];
+    for (let i = 0; i < curData.length; i++) {
+      let matchSearch = true;
+      let dateValues = [curData[i].Date.getDate(), curData[i].Date.getMonth() + 1, curData[i].Date.getFullYear()];
+      
+      for (let j = 0; j < searchDate.length; j++) {
+        if (searchDate[j] && searchDate[j] != dateValues[j]) {
+          matchSearch = false;
         }
       }
+      
+      if (matchSearch) {
+        filter.push(curData[i]);
+      }
+
       setFilteredData(filter);
     }
   }
 
   const addDataPointDescription = async(item, description) => {
     throwAlertSuccess(true);
-    AsyncCode.changeDataPointDescription(RawData.Key, item, description);
-    setCurData(AsyncCode.getGraph(RawData.Key).NewData);
+    AsyncCode.changeDataPointDescription(keyParam, item, description);
+    setCurData(AsyncCode.getGraph(keyParam).NewData);
+    filterData();
     // if(description.length >= 1) {
     //   setModalVisible(false);
     //   setShowError(false);
@@ -1489,9 +1470,11 @@ function EditData({navigation}) {
           <Text style={styles.title}> Edit Data </Text>
           <Text style={styles.subheader}> Date Filter </Text>
           <View style={styles.fixToText}>
-            <TextInput onChangeText={text => (searchDate[0] = text, updateSearch())} placeholder="Day" style={styles.dayInput} editable maxLength={2}/>
-            <TextInput onChangeText={text => (searchDate[1] = text, updateSearch())} placeholder="Month" style={styles.dayInput} editable maxLength={2}/>
-            <TextInput onChangeText={text => (searchDate[2] = text, updateSearch())} placeholder="Year" style={styles.dayInput} editable maxLength={4}/>
+            {searchDate.map((element, i) => {
+              return (
+                <TextInput key={i} onChangeText={text => (updateSearch(text, i), filterData())} placeholder={placeholders[i]} style={styles.dayInput} editable maxLength={lengths[i]}/>
+              );
+            })}
           </View>
           <View style={styles.barLine}></View>
 
@@ -1499,7 +1482,7 @@ function EditData({navigation}) {
             return (
               <View key={i} style={styles.barLine}>
                 <Text style={styles.tinyText}> {entry.Date.toLocaleString()} </Text>
-                <Text style={styles.tinyText}> {"Button: " + RawData.TempButtons[entry.ButtonID].ButtonName} </Text>
+                <Text style={styles.tinyText}> {"Button: " + graph.TempButtons[entry.ButtonID].ButtonName} </Text>
                 <View style={styles.fixToText}>
                   <TouchableWithoutFeedback onPress={() => { setDataPoint(entry); setModalTitle(entry.Date.toLocaleString()); throwModal(true); }}>
                     <Text style={styles.lightButton}> Add Description </Text>
@@ -1516,7 +1499,7 @@ function EditData({navigation}) {
             show={alertDelete}
             showProgress={false}
             title="Delete Data"
-            message= {"Are you sure you want to delete this entry?"}
+            message= {"Delete This Data Point?"}
             closeOnTouchOutside={false}
             closeOnHardwareBackPress={false}
             showCancelButton={true}
