@@ -59,10 +59,10 @@ class AsyncStorageCode {
 
   //alters async storage when given an item's data and the item's key
   alterAsyncItem = (item) => {
-    for (let i =0; i<TextArray.length;i++){
-        if(item.Key==TextArray[i].Key){
-          TextArray[i]=item;
-        }
+    for (let i = 0; i < TextArray.length; i++){
+      if (item.Key == TextArray[i].Key) {
+        TextArray[i]=item;
+      }
     }
     this.setAllData();
   };
@@ -83,7 +83,6 @@ class AsyncStorageCode {
     graph.Description = desc;
     graph.GraphType = type;
     graph.TempButtons = buttons;
-    console.log(this.getGraph(key));
 
     this.setAllData();
   };

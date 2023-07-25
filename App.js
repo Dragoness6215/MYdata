@@ -214,7 +214,7 @@ function HomeScreen({navigation}) {
 
 // Connect With a Bluetooth Device Page
 // Navigate to buttonSelection when done or if it's already connected
-function SelectDevice({navigation}) {
+function SelectDevice({ navigation }) {
   const [textArray, setTextArray] = useState([]);
   const [activeComponent, setActiveComponent] = useState("Scanning");
   const [selectedDevice, setSelectedDevice] = useState();
@@ -428,9 +428,9 @@ function ButtonSelection({ navigation }) {
   }
 
   // Sets the button inputs based on selected drop downs
-  const buttonInputSet = (buttonNumber,buttonKey) => {
+  const buttonInputSet = (buttonNumber, buttonKey) => {
     let tempSelected = selectedOptions;
-    if(buttonNumber == 0) {
+    if (buttonNumber == 0) {
       GLOBAL.BUTTON0KEY = buttonKey;
       tempSelected[0].button0Key = buttonKey;
     }
@@ -718,7 +718,7 @@ function SelectData({navigation}) {
           show={alert}
           showProgress={false}
           title="Delete Graph"
-          message= {"Are you sure you wish to delete the graph?"}
+          message= {"Confirm Deletion For This Graph?"}
           closeOnTouchOutside={false}
           closeOnHardwareBackPress={true}
           showCancelButton={true}
@@ -817,6 +817,10 @@ function NewGraph({ route, navigation }) {
     setButtons(tempButtons);
   }
 
+  const addButtons = () => {
+    //Code to be added to allow adding/removing buttons
+  }
+
   //Adds the new graph to storage and sends user back to graph list
   const addGraph = () => {
     AsyncCode.submitHandler(name, desc, type, buttons);
@@ -830,7 +834,7 @@ function NewGraph({ route, navigation }) {
           <Text style={styles.title}> New Graph </Text>
           
           <Text style={styles.subheader}> Graph Name </Text>
-          <TextInput multiline numberOfLines={1} placeholder="Graph Name" style={styles.input} onChangeText={setName} value={name} editable maxLength={100}/>
+          <TextInput placeholder="Graph Name" style={styles.input} onChangeText={setName} value={name} editable maxLength={100}/>
           
           <Text style={styles.subheader}> Graph Description </Text>
           <TextInput multiline numberOfLines={4} placeholder="Graph Description" style={styles.input} onChangeText={setDesc} value={desc} editable maxLength={1000}/>
@@ -861,7 +865,7 @@ function NewGraph({ route, navigation }) {
           title="New Graph Error"
           message= {alertText}
           closeOnTouchOutside={false}
-          closeOnHardwareBackPress={true}
+          closeOnHardwareBackPress={false}
           showConfirmButton={true}
           confirmButtonColor="#63ba83"
           contentContainerStyle={styles.alert}
@@ -877,7 +881,7 @@ function NewGraph({ route, navigation }) {
           title = "Confirm Submission"
           message= "Are All Fields Correct?"
           closeOnTouchOutside={false}
-          closeOnHardwareBackPress={true}
+          closeOnHardwareBackPress={false}
           showConfirmButton={true}
           showCancelButton={true}
           confirmButtonColor="#63ba83"
@@ -926,7 +930,7 @@ function Graph({ route, navigation }) {
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => {
       setGraph(AsyncCode.getGraph(keyParam));
-      setGraphType(graphParam.GraphType);
+      setGraphType(AsyncCode.getGraph(keyParam).GraphType);
       toggleRefreshChild();
     });
     return unsubscribe;
@@ -1025,15 +1029,6 @@ function Graph({ route, navigation }) {
     })
   }, []);
 
-  // used to update GLOBAL data and navigate to alter data
-  const navigateGraphSettings = (item) => {
-    navigation.navigate('Graph Settings', { keyParam: item.Key });
-  }
-
-  const navigateEditData = (item) => {
-    navigation.navigate('Edit Data', { keyParam: item.Key });
-  }
-
   const deleteGraph = () => {
     AsyncCode.removeItem(keyParam);
     if(GLOBAL.BUTTON0KEY == keyParam) {
@@ -1064,10 +1059,10 @@ function Graph({ route, navigation }) {
   const customAlert = () => {
     return (
       <View>
-        <TouchableOpacity opacity={0.5} onPress={() => { navigateGraphSettings(graph); throwAlertMenu(false); }}>
+        <TouchableOpacity opacity={0.5} onPress={() => { navigation.navigate('Graph Settings', { keyParam: keyParam }); throwAlertMenu(false); }}>
           <Text style={styles.lightButton}> Graph Settings </Text>
         </TouchableOpacity>
-        <TouchableOpacity opacity={0.5} onPress={() => { navigateEditData(graph); throwAlertMenu(false); }}>
+        <TouchableOpacity opacity={0.5} onPress={() => { navigation.navigate('Edit Data', { keyParam: keyParam }); throwAlertMenu(false); }}>
           <Text style={styles.lightButton}> Edit Data Points </Text>
         </TouchableOpacity>
         <TouchableOpacity opacity={0.5} onPress={() => { exportData(); throwAlertMenu(false); }}>
@@ -1222,17 +1217,12 @@ function GraphSettings({ route, navigation }) {
   const [alertTitle, setAlertTitle] = useState("");
   const [alertText, setAlertText] = useState("");
 
-  const [asyncStorage, setAsyncStorage]= useState([]);
-
-  // // Used to save the data to asnyc when the page is left
-  // React.useEffect(() => {
-  //   const unsubscribe = navigation.addListener('beforeRemove', (e) => {});
-  //   return unsubscribe;
-  // }, [navigation]);
+  const [asyncStorage, setAsyncStorage] = useState([]);
 
   // Stuff done on page load.
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => {
+      AsyncCode.restoreFromAsync();
       setAsyncStorage(AsyncCode.getTextArray());
     });
     return unsubscribe;
@@ -1242,15 +1232,6 @@ function GraphSettings({ route, navigation }) {
     let ButtonsTemp = buttons;
     ButtonsTemp[id].ButtonName = text;
     setButtons(ButtonsTemp);
-  }
-
-  //Code to be added to allow adding/removing buttons
-  const addButtons = () => {
-    if (buttons.length == 5) {
-      setAlertTitle("Button Limit Reached");
-      setAlertText("Maximum Limit Is Five Buttons");
-      throwAlert(true);
-    }
   }
 
   const checkGraph = () => {
@@ -1289,6 +1270,7 @@ function GraphSettings({ route, navigation }) {
 
   const submitChanges = () => {
     AsyncCode.updateGraph(name, desc, type, buttons, keyParam);
+    //.replace("Graph", { keyParam: keyParam });
     navigation.pop();
   }
 
@@ -1329,7 +1311,7 @@ function GraphSettings({ route, navigation }) {
           title={alertTitle}
           message= {alertText}
           closeOnTouchOutside={false}
-          closeOnHardwareBackPress={true}
+          closeOnHardwareBackPress={false}
           showConfirmButton={true}
           confirmButtonColor="#63ba83"
           contentContainerStyle={styles.alert}
@@ -1383,44 +1365,6 @@ function EditData({ route, navigation }) {
   let placeholders = ["Day", "Month", "Year"];
   let lengths = [2, 2, 4];
 
-  // Used to save the data to asnyc when the page is left
-  React.useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {});
-    return unsubscribe;
-  }, [navigation]);
-
-  // Stuff done on page load.
-  React.useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', (e) => {
-      // changeData(GLOBAL.ITEM);
-      // setCurData(GLOBAL.ITEM.NewData);
-      // setFilteredData(GLOBAL.ITEM.NewData);
-    });
-    return unsubscribe;
-  }, [navigation]);
-
-  // changes the rawData
-  // params data is the data the raw data will be set too
-  // const changeData = (data) => {
-  //   setRawData(data);
-  // }
-
-  // flags a point to be deleted
-  const deleteDataPoint = () => {
-    AsyncCode.removeDataPoint(keyParam, dataDelete);
-    throwAlertDelete(false);
-    setCurData(AsyncCode.getGraph(keyParam).NewData);
-    filterData();
-    // GLOBAL.ITEM = AsyncCode.getGraph(RawData.Key);
-    //console.log(temp.Data);
-    // throwAlert(null);
-    // changeData(temp);
-    // setCurData(temp.NewData);
-    // setFilteredData(temp.NewData);
-    // GLOBAL.ITEM = temp;
-    // GLOBAL.BUTTONPRESSED = true;
-  }
-
   const updateSearch = (date, index) => {
     let tempSearch = searchDate;
     tempSearch[index] = date;
@@ -1445,6 +1389,22 @@ function EditData({ route, navigation }) {
 
       setFilteredData(filter);
     }
+  }
+
+  // flags a point to be deleted
+  const deleteDataPoint = () => {
+    AsyncCode.removeDataPoint(keyParam, dataDelete);
+    throwAlertDelete(false);
+    setCurData(AsyncCode.getGraph(keyParam).NewData);
+    filterData();
+    // GLOBAL.ITEM = AsyncCode.getGraph(RawData.Key);
+    //console.log(temp.Data);
+    // throwAlert(null);
+    // changeData(temp);
+    // setCurData(temp.NewData);
+    // setFilteredData(temp.NewData);
+    // GLOBAL.ITEM = temp;
+    // GLOBAL.BUTTONPRESSED = true;
   }
 
   const addDataPointDescription = async(item, description) => {
@@ -1497,7 +1457,6 @@ function EditData({ route, navigation }) {
           
           <AwesomeAlert
             show={alertDelete}
-            showProgress={false}
             title="Delete Data"
             message= {"Delete This Data Point?"}
             closeOnTouchOutside={false}
@@ -1516,11 +1475,10 @@ function EditData({ route, navigation }) {
           <AwesomeAlert
             show={alertSuccess}
             showProgress={false}
-            title="Success"
+            title={"Action Successful"}
             message= {"Description Added"}
             closeOnTouchOutside={false}
             closeOnHardwareBackPress={false}
-            showCancelButton={false}
             showConfirmButton={true}
             confirmText="Okay"
             confirmButtonColor="#E07A5F"

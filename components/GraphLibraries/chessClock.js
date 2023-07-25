@@ -184,7 +184,7 @@ function Lines({data, maxLength, pressHandler}) {
       temp = 5;
     }
     //toReturn.push(<Line x1={width/2-temp} y1={curHeight} x2={width/2+temp} y2={curHeight} stroke={colorArray[rawData[i].buttonPressed]} strokeWidth={width*.075} onPress={()=>pressHandler(rawData[i])}/> )
-    toReturn.push(<Rect x={width / 2 - temp} y={curHeight - (width * .075)} width={temp * 2} height={width * .075} fill={colorArray[data[i].ButtonID]} onPress={() => pressHandler(data[i])}></Rect>)
+    toReturn.push(<Rect key={i} x={width / 2 - temp} y={curHeight - (width * .075)} width={temp * 2} height={width * .075} fill={colorArray[data[i].ButtonID]} onPress={() => pressHandler(data[i])}></Rect>)
     curHeight += width * .1;
   }
 
