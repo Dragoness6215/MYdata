@@ -20,19 +20,13 @@ export default class Triskelion extends React.Component {
     super(props);
     this.state = {
       isLoading: true,
-      numberOfDays:0,
-      endDate:new Date("2017-04-01"),
-      title:"Whatever you want",
-      graphData: [],
-      graphButtons: [],
       showAlert:false,
       alertTitle:"",
       alertMessage:"",
-      tableHead: [' Column 1', ' Column 2',],
-      tableData: [
-      ['row 1', 'row 1',],
-      ['row 2', 'row 2',],
-      ],
+      graphData: [],
+      buttonNames: [],
+      tableHead: [],
+      tableData: [],
     }
   }
 
@@ -69,11 +63,8 @@ export default class Triskelion extends React.Component {
     return tableDataClone;
   }
 
-  descriptionList=[];
-
   DataProcessing = (graph) =>{
     let dataArray = graph.NewData;
-
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let buttonFollowed=[[0,0,0],[0,0,0],[0,0,0]];
@@ -84,9 +75,8 @@ export default class Triskelion extends React.Component {
     this.setState({
       isLoading: false,
       graphData: buttonFollowed,
-      graphButtons: graph.TempButtons,
+      buttonNames: graph.TempButtons,
       // tableData:newTableData,
-      title: graph.Title,
     });
   }
  
@@ -136,7 +126,7 @@ export default class Triskelion extends React.Component {
       <View>
         <View style={this.props.styles.container}>        
           <View style={this.props.styles.border}>
-            <Dot data={this.state.graphData} buttons={this.state.graphButtons} pressHandler={this.whenPressed}></Dot>
+            <Dot data={this.state.graphData} buttons={this.state.buttonNames} pressHandler={this.whenPressed}></Dot>
           </View>
           <Text style={this.props.styles.regularText}> Press on the dots to see more information </Text>
         {/* {this.descriptionList.length >0 ? (
@@ -206,26 +196,26 @@ function Dot ({data, buttons, pressHandler}) {
     outerTriangle.push([diffXL, diffYL]);
     innerTriangle.push([diffXS, diffYS]);
 
-    circles.push(<Circle cx={diffX} cy={diffY} r={r} fill={colorArray[i]} onPress={() => pressHandler(data[i], buttons, i)}/>)
+    circles.push(<Circle key={i} cx={diffX} cy={diffY} r={r} fill={colorArray[i]} onPress={() => pressHandler(data[i], buttons, i)}/>)
   }
 
   for(let i = 0; i < buttons.length; i++){
     for(let j = 0; j < buttons.length; j++) {
-      if(i == j) {
-        selfLinks.push(<Circle cx={outerTriangle[i][0]} cy={outerTriangle[i][1]} r={r} strokeWidth={strokeWidth * data[i][j]} stroke={colorArray[i]}/>)
+      if (i == j) {
+        selfLinks.push(<Circle key={`${i}${j}`} cx={outerTriangle[i][0]} cy={outerTriangle[i][1]} r={r} strokeWidth={strokeWidth * data[i][j]} stroke={colorArray[i]}/>)
         if (data[i][j] > 20) {
-          selfLinks.push(<Circle cx={outerTriangle[i][0]} cy={outerTriangle[i][1]} r={r + ((strokeWidth * data[i][j]) / 2)} fill={colorArray[i]}/>)
+          selfLinks.push(<Circle key={`${i}${j}+`} cx={outerTriangle[i][0]} cy={outerTriangle[i][1]} r={r + ((strokeWidth * data[i][j]) / 2)} fill={colorArray[i]}/>)
         }
       }
-      else if(data[i][j]>0){
+      else if (data[i][j] > 0){
         if(alreadyAdded[j][i] == 0){
           //there hasn't been anything added to there, use outer
-          links.push(<Line x1={outerTriangle[i][0]} y1={outerTriangle[i][1]} x2={outerTriangle[j][0]} y2={outerTriangle[j][1]} strokeWidth={strokeWidth * data[i][j]} stroke={colorArray[i]} strokeLinecap={"round"}/>)
+          links.push(<Line key={`${i}${j}`} x1={outerTriangle[i][0]} y1={outerTriangle[i][1]} x2={outerTriangle[j][0]} y2={outerTriangle[j][1]} strokeWidth={strokeWidth * data[i][j]} stroke={colorArray[i]} strokeLinecap={"round"}/>)
           alreadyAdded[i][j]=1;
         }
-        else{
+        else {
           //something has been added, use inner
-          links.push(<Line x1={innerTriangle[i][0]} y1={innerTriangle[i][1]} x2={innerTriangle[j][0]} y2={innerTriangle[j][1]} strokeWidth={strokeWidth * data[i][j]} stroke={colorArray[i]} strokeLinecap={"round"}/>)
+          links.push(<Line key={`${i}${j}`} x1={innerTriangle[i][0]} y1={innerTriangle[i][1]} x2={innerTriangle[j][0]} y2={innerTriangle[j][1]} strokeWidth={strokeWidth * data[i][j]} stroke={colorArray[i]} strokeLinecap={"round"}/>)
         }
       }
     }

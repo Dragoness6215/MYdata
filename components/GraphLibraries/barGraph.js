@@ -29,13 +29,9 @@ export default class BarGraph extends React.Component {
     super(props);
     this.state = {
       isLoading: true,
-      title:"Whatever you want",
-      graphData: {
-        labels: [],
-        datasets: [ { data: [] } ],
-      },
-      tableHead: [' Button and Time', ' Description',],
-      tableData: [ [] ],
+      graphData: { labels: [], datasets: [ { data: [] } ] },
+      tableHead: [],
+      tableData: [],
     }
   }
   // when passed in json changes, this is called
@@ -80,10 +76,6 @@ export default class BarGraph extends React.Component {
 
   DataProcessing = (graph) => {
     let dataArray = graph.NewData;
-
-    console.log("This is the new test.")
-    console.log(graph);
-
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let dataLabels = [];
@@ -98,13 +90,9 @@ export default class BarGraph extends React.Component {
     }
     
     this.setState({
-      graphData: {
-        labels: dataLabels,
-        datasets:[ { data: dataCounts } ]
-      },
+      isLoading: false,
+      graphData: { labels: dataLabels, datasets:[ { data: dataCounts } ] },
       //tableData:this.ChangeTableData(tempGraphData),
-      title: graph.Title,
-      isLoading: false
     });
   }
 

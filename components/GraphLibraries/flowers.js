@@ -31,21 +31,15 @@ export default class Flowers extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isLoading: true,
       showAlert: false,
       alertTitle: "",
       alertMessage: "",
-      isLoading: true,
-      tooBig: false,
-      buttonNames: [],
-      numberOfDays: 0,
-      endDate: new Date("2017-04-01"),
-      title: "Whatever you want",
       graphData: [],
-      tableHead: [' Column 1', ' Column 2',],
-      tableData: [
-      ['row 1', 'row 1',],
-      ['row 2', 'row 2',],
-      ],
+      buttonNames: [],
+      tooBig: false,
+      tableHead: [],
+      tableData: [],
     }
   }
 
@@ -87,7 +81,6 @@ export default class Flowers extends React.Component {
 
   DataProcessing = (graph) => {
     let dataArray = graph.NewData;
-
     this.quickSort(dataArray, 0, (dataArray.length - 1));
     let index = Math.max(dataArray.length - 250, 0);
 
@@ -116,7 +109,6 @@ export default class Flowers extends React.Component {
       graphData: allDays,
       buttonNames: graph.TempButtons,
       // tableData:newTableData,
-      title: graph.Title,
     });
   }
 

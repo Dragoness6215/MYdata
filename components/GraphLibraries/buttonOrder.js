@@ -35,19 +35,13 @@ export default class ButtonOrder extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showAlert:false,
-      alertTitle:"",
-      alertMessage:"",
       isLoading: true,
-      numberOfDays:0,
-      endDate:new Date("2017-04-01"),
-      title:"Whatever you want",
+      showAlert: false,
+      alertTitle: "",
+      alertMessage: "",
       graphData: [],
-      tableHead: [' Button', ' Description',],
-      tableData: [
-      ['row 1', 'row 1',],
-      ['row 2', 'row 2',],
-      ],
+      tableHead: [],
+      tableData: [],
     }
   }
 
@@ -86,14 +80,12 @@ export default class ButtonOrder extends React.Component {
 
   DataProcessing = (graph) => {
     let dataArray = graph.NewData;
-
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     this.setState({
       isLoading: false,
       graphData: dataArray,
       // tableData:newTableData,
-      title: graph.Title,
     });
 
     // this.descriptionList=[];

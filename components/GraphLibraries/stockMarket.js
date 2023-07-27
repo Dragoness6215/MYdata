@@ -19,26 +19,18 @@ export default class StockMarket extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showAlert:false,
+      isLoading: true,
+      showAlert: false,
       alertTitle: "",
       alertMessage: "",
-      buttons: [],
-      isLoading: true,
-      maxCount: 0,
-      numberOfDays:0,
-      endDate:new Date("2017-04-01"),
-      title:"Whatever you want",
       graphData: [],
-      maxCount:0,
-      tableHead: [' Column 1', ' Column 2',],
-      tableData: [
-      ['row 1', 'row 1',],
-      ['row 2', 'row 2',],
-      ],
+      buttons: [],
+      maxCount: 0,
+      tableHead: [],
+      tableData: [],
     }
   }
 
-  previousProps;
   // when passed in json changes, this is called
   // updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
@@ -74,7 +66,6 @@ export default class StockMarket extends React.Component {
 
   DataProcessing = (graph) =>{
     let dataArray = graph.NewData;
-    
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let TempDates = [];
@@ -114,7 +105,6 @@ export default class StockMarket extends React.Component {
       maxCount: maxCount,
       buttons: graph.TempButtons,
       // tableData:newTableData,
-      title: graph.Title,
     });
   }
 

@@ -27,98 +27,66 @@ let indigo="#6243b0";
 
 export default class ExampleGraph extends React.Component {
 
-    // State of the class, data stored in here
-    // @param: props, the props passed in from the the parent class
-    constructor(props) {
-        super(props);
-        this.state = {
-            isLoading: true,
-            numberOfDays:0,
-            endDate:new Date("2017-04-01"),
-            title:"Whatever you want",
-            graphData: [
-            ],
-            tableHead: [' Column 1', ' Column 2',],
-            tableData: [
-            ['row 1', 'row 1',],
-            ['row 2', 'row 2',],
-            ],
-        }
+  //State Variables: //Initialize any variables that need to be passed to the render here
+  //Modify them by calling setState in DataProcessing as needed
+  constructor(props) {
+    super(props);
+    this.state = {
+      isLoading: true,
+      showAlert: false,
+      alertTitle: "",
+      alertMessage: "",
+      graphData: [],
+      tableHead: [],
+      tableData: [],
     }
+  }
 
-    // used to check if props have updated
-    previousProps;
-    // if you integrate data point descriptions, you may use this to store the descriptionData
-    descriptionList=[];
+  //Called on load and sets the state variables
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+    // let newTableData=this.ChangeTableData(tempGraphData);
+  }
 
-    // When the passed in value changes, this is called
-    // Updates the state for the graph
-    componentDidUpdate(prevProps, prevState) {
-      if (prevProps !== this.props || this.state.isLoading) {
-        let tempGraphData=this.DataProcessing(this.props.rawData);
-        let newTableData=this.ChangeTableData(tempGraphData);
-        this.setState({
-          isLoading:false,
-          graphData:tempGraphData,
-          tableData:newTableData,
-          title:this.props.rawData.Title,
-        });
-        this.previousProps=this.props;
-      }
+  //Called when the graph data is changed and updates the state variables
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps !== this.props || this.state.isLoading) {
+      this.DataProcessing(this.props.rawData);
+      // let newTableData=this.ChangeTableData(tempGraphData);
     }
+  }
 
+  //Processes the data and updates any necessary variables for the render
+  DataProcessing = (graph) =>{
+    let dataArray = graph.NewData;
 
-    // This is Called on load
-    // Updates the state for the graph
-    componentDidMount(){
-      let tempGraphData=this.DataProcessing(GLOBAL.ITEM);
-      let newTableData=this.ChangeTableData(tempGraphData);
-      this.setState({
-        isLoading:false,
-        graphData:tempGraphData,
-        tableData:newTableData,
-        title:GLOBAL.ITEM.Title,
-      });
-    }
+    //Add code to process and manipulate the data here
+    //Any additional variables must be included in the set state call
 
-    // This is used to manually reload the state
-    updateData(){
-        this.setState({
-          isLoading:true,
-        });
-    }
+    this.setState({
+      isLoading: false,
+      graphData: dataArray,
+    });
+  }
 
-    // processes the data 
-    DataProcessing = (rawJson) =>{
-      //TODO: Write code to parse the data
-      let parsedJson=[];
-
-      return parsedJson;
-    }
-
-    // Changes TableData for BarGraph
-    // tempData by default is the parsed data from DataProcessing
-    ChangeTableData = (tempData) => {
-        let tableDataClone=[];
-        // TODO: write the code to return the table's data
-        return tableDataClone;
-    }
-
-    render() {
-        return (
-          <View style={this.props.styles.container}>
-              <View>
-              <Text style ={this.props.styles.header}> {this.state.title  + " Graph"} </Text>
-              <View style={this.props.styles.border}>
-                    <Text> TODO: GRAPH CODE GOES HERE </Text>
-              </View>
-              <Text style ={this.props.styles.header}> {this.state.title  + " Table"} </Text>
-                <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-                  <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-                  <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-                </Table>
-              </View>
-          </View>
-        );
-    }
+  render() {
+    return (
+      <View style={this.props.styles.container}>
+        <View style={this.props.styles.border}>
+          {/*Insert Code to Display Graph Here*/}
+        </View>
+        
+        {/*Alert to Display Further Info on Tap*/}
+        <AwesomeAlert
+          show={this.state.showAlert}
+          title={this.state.alertTitle}
+          message= {this.state.alertMessage}
+          titleStyle={this.props.styles.alertText}
+          messageStyle={this.props.styles.alertBody}
+          contentContainerStyle={this.props.styles.alert}
+          onDismiss={() => { this.setState({showAlert:false}); }}
+        />
+      </View>
+    );
+  }
 }

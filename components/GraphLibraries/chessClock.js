@@ -33,17 +33,13 @@ export default class ChessClock extends React.Component {
     super(props);
     this.state = {
       isLoading: true,
-      endDate:new Date("2017-04-01"),
-      title:"Whatever you want",
-      graphData: [],
       showAlert: false,
+      alertTitle: "",
       alertMessage: "",
-      maxLength:0,
-      tableHead: [' Column 1', ' Column 2',],
-      tableData: [
-      ['row 1', 'row 1',],
-      ['row 2', 'row 2',],
-      ],
+      graphData: [],
+      maxLength: 0,
+      tableHead: [],
+      tableData: [],
     }
   }
 
@@ -64,9 +60,7 @@ export default class ChessClock extends React.Component {
 
   // used to manually reload the state
   updateData(){
-      this.setState({
-        isLoading:true,
-      });
+    this.setState( { isLoading:true } );
   }
 
   //Changes TableData for BarGraph
@@ -82,8 +76,10 @@ export default class ChessClock extends React.Component {
 
   // descriptionList=[];
 
-  DataProcessing = (graph) =>{
+  DataProcessing = (graph) => {
     let dataArray = graph.NewData;
+    this.quickSort(dataArray, 0, (dataArray.length - 1));
+
     let buttons = graph.TempButtons;
     let finalArray = [];
     let maxLength = 0;
@@ -114,10 +110,9 @@ export default class ChessClock extends React.Component {
 
     this.setState({
       isLoading: false,
-      maxLength: maxLength,
       graphData: finalArray,
+      maxLength: maxLength,
       // tableData:newTableData,
-      title:graph.Title,
     });
 
     // this.descriptionList=[];
@@ -129,6 +124,34 @@ export default class ChessClock extends React.Component {
     //   };
     //   this.descriptionList.push(temp);
     // }
+  }
+
+  swap=(arr,xp, yp)=>{
+    var temp = arr[xp];
+    arr[xp] = arr[yp];
+    arr[yp] = temp;
+  }
+
+  partition = (arr, low, high) => {
+    let pivot = arr[high];
+    let i = (low - 1);
+
+    for (let j = low; j <= high - 1; j++) {
+      if (arr[j].Date < pivot.Date) {
+        i++;
+        this.swap(arr, i, j);
+      }
+    }
+    this.swap(arr, i + 1, high);
+    return (i + 1);
+  }
+
+  quickSort = (arr, low, high) => {
+    if (low < high) {
+      let pi = this.partition(arr, low, high);
+      this.quickSort(arr, low, pi - 1);
+      this.quickSort(arr, pi + 1, high);
+    }
   }
 
   whenPressed = (item) => {

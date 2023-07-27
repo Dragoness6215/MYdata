@@ -89,28 +89,21 @@ class AsyncStorageCode {
 
   //prepare to put it into the place by storing in the text array
   submitHandler = (Title, Description, Type, Buttons) =>{
+    const Key = Math.random().toString();
+
     if (Description.length === 0) {
       Description = "No Description... Yet";
     }
-    
-    const Key = Math.random().toString();
-    let TempData = [
-      {ButtonName:Buttons[0], data:[]},
-      {ButtonName:Buttons[1], data:[]},
-      {ButtonName:Buttons[2], data:[]},
-    ];
 
     let TempDataNew = [];
-
     let TempButtons = [];
     for (let i = 0; i < Buttons.length; i++) {
       TempButtons.push({ButtonID:i, ButtonName:Buttons[i]});
     }
 
-    let Data = TempData;
     let GraphType = Type;
     let NewData = TempDataNew;
-    const newItem = [{ Key, Title, Description, GraphType, Data, TempButtons, NewData}, ...TextArray];
+    const newItem = [{ Key, Title, Description, GraphType, TempButtons, NewData}, ...TextArray];
     TextArray = (newItem);
     this.storeInAsync(newItem);
   };

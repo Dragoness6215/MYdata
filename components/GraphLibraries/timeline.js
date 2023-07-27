@@ -11,20 +11,14 @@ export default class Timeline extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isLoading: true,
       showAlert: false,
       alertTitle: "",
       alertMessage: "",
-      buttonNames: [],
-      isLoading: true,
-      numberOfDays:0,
-      endDate:new Date("2017-04-01"),
-      title:"Whatever you want",
       graphData: [],
-      tableHead: [' Button', ' Date'],
-      tableData: [
-      ['row 1', 'row 1',],
-      ['row 2', 'row 2',],
-      ],
+      buttonNames: [],
+      tableHead: [],
+      tableData: [],
     }
   }
 
@@ -62,7 +56,6 @@ export default class Timeline extends React.Component {
 
   DataProcessing = (graph) =>{
     let dataArray = graph.NewData;
-    
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let TempDates = [];
@@ -90,7 +83,6 @@ export default class Timeline extends React.Component {
       graphData: allDays,
       buttonNames: graph.TempButtons,
       // tableData:newTableData,
-      title: graph.Title,
     });
   }
 

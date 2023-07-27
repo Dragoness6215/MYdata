@@ -37,6 +37,8 @@ export default class Dandelion extends React.Component {
       dates: [],
       dateTotals: [],
       buttonNames: [],
+      tableHead: [],
+      tableData: [],
     }
   }
   
@@ -66,7 +68,6 @@ export default class Dandelion extends React.Component {
 
   DataProcessing = (graph) =>{
     dataArray = graph.NewData;
-
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let newArray = [];

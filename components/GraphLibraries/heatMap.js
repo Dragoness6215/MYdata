@@ -19,16 +19,15 @@ export default class HeatMap extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showAlert:false,
+      isLoading: true,
+      showAlert: false,
       alertTitle: "",
       alertMessage: "",
-      isLoading: true,
-      numberOfDays:0,
-      endDate:new Date("2017-04-01"),
-      title:"Whatever you want",
       graphData: [],
-      tableHead: [' Date', ' Description',],
-      tableData: [ ['1', '2',] ],
+      numberOfDays: 0,
+      endDate: new Date(),
+      tableHead: [],
+      tableData: [],
     }
   }
 
@@ -99,10 +98,9 @@ export default class HeatMap extends React.Component {
     
     this.setState({
       isLoading: false,
-      numberOfDays: totalDateCount,
       graphData: dateCounts,
+      numberOfDays: totalDateCount,
       endDate: endDate,
-      title: graph.Title,
       // tableData:newTableData,
     });
   }
