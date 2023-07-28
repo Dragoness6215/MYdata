@@ -84,46 +84,59 @@ export default class ChessClock extends React.Component {
     let finalArray = [];
     let maxLength = 0;
     let checked = [];
-    for (let i = 0; i < dataArray.length; i++) {
-      if (checked.includes(i)) {
-        continue;
-      }
-      for (let j = i + 1; j < dataArray.length; j++) {
-        let start = dataArray[i];
-        let end = dataArray[j];
-        if (start.ButtonID == end.ButtonID) {
-          let duration = end.Date.getTime() - start.Date.getTime();
-          if (duration > maxLength) {
-            maxLength = duration;
-          }
 
-          finalArray.push({
-            ButtonID: start.ButtonID,
-            ButtonName: buttons[start.ButtonID].ButtonName,
-            Duration: duration,
-          });
-          checked.push(j);
-          break;
+    for (let i = 0; i < dataArray.length; i++) {
+      if (!checked.includes(i)) {
+        for (let j = i + 1; j < dataArray.length; j++) {
+          let start = dataArray[i];
+          let end = dataArray[j];
+
+          if (start.ButtonID == end.ButtonID) {
+            let duration = end.Date.getTime() - start.Date.getTime();
+            maxLength = Math.max(maxLength, duration);
+            finalArray.push({
+              ButtonID: start.ButtonID,
+              ButtonName: buttons[start.ButtonID].ButtonName,
+              Duration: duration
+            });
+
+            checked.push(j);
+            break;
+          }
         }
       }
     }
+
+
+    // for (let i = 0; i < dataArray.length; i++) {
+    //   if (checked.includes(i)) {
+    //     continue;
+    //   }
+    //   for (let j = i + 1; j < dataArray.length; j++) {
+    //     let start = dataArray[i];
+    //     let end = dataArray[j];
+    //     if (start.ButtonID == end.ButtonID) {
+    //       let duration = end.Date.getTime() - start.Date.getTime();
+    //       if (duration > maxLength) {
+    //         maxLength = duration;
+    //       }
+
+    //       finalArray.push({
+    //         ButtonID: start.ButtonID,
+    //         ButtonName: buttons[start.ButtonID].ButtonName,
+    //         Duration: duration,
+    //       });
+    //       checked.push(j);
+    //       break;
+    //     }
+    //   }
+    // }
 
     this.setState({
       isLoading: false,
       graphData: finalArray,
       maxLength: maxLength,
-      // tableData:newTableData,
     });
-
-    // this.descriptionList=[];
-    // if(rawJson.Data[i].data[j].Description!=undefined){
-    //   let temp={
-    //     data:this.reformatToCorrect(rawJson.Data[i],i,j),
-    //     buttonName:rawJson.Data[i].ButtonName,
-    //     Description:rawJson.Data[i].data[j].Description,
-    //   };
-    //   this.descriptionList.push(temp);
-    // }
   }
 
   swap=(arr,xp, yp)=>{
@@ -155,8 +168,8 @@ export default class ChessClock extends React.Component {
   }
 
   whenPressed = (item) => {
-    console.log(item);
     let message = `Button: ${item.ButtonName}\nDuration: ${(item.Duration / 1000).toFixed(3)} seconds`;
+    
     this.setState({
       showAlert: true,
       alertMessage: message});
@@ -203,10 +216,8 @@ function Lines({data, maxLength, pressHandler}) {
 
   for(let i = 0; i < data.length; i++) {
     let temp = (data[i].Duration * scale) / 2;
-    if (temp < 5) {
-      temp = 5;
-    }
-    //toReturn.push(<Line x1={width/2-temp} y1={curHeight} x2={width/2+temp} y2={curHeight} stroke={colorArray[rawData[i].buttonPressed]} strokeWidth={width*.075} onPress={()=>pressHandler(rawData[i])}/> )
+    temp = Math.max(temp, 5);
+    
     toReturn.push(<Rect key={i} x={width / 2 - temp} y={curHeight - (width * .075)} width={temp * 2} height={width * .075} fill={colorArray[data[i].ButtonID]} onPress={() => pressHandler(data[i])}></Rect>)
     curHeight += width * .1;
   }

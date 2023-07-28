@@ -45,14 +45,12 @@ export default class ExampleGraph extends React.Component {
   //Called on load and sets the state variables
   componentDidMount() {
     this.DataProcessing(this.props.rawData);
-    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   //Called when the graph data is changed and updates the state variables
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
-      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
@@ -66,6 +64,17 @@ export default class ExampleGraph extends React.Component {
     this.setState({
       isLoading: false,
       graphData: dataArray,
+    });
+  }
+
+  pressHandler = (data) => {
+    let title = "";
+    let message = "";
+    
+    this.setState({
+      showAlert: true,
+      alertTitle: title,
+      alertMessage: message,
     });
   }
 

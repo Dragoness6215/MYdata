@@ -62,9 +62,7 @@ export default class ButtonOrder extends React.Component {
 
   // used to manually reload the state
   updateData() {
-      this.setState({
-        isLoading:true,
-      });
+    this.setState( { isLoading:true } );
   }
 
   //Changes TableData for BarGraph
@@ -87,18 +85,6 @@ export default class ButtonOrder extends React.Component {
       graphData: dataArray,
       // tableData:newTableData,
     });
-
-    // this.descriptionList=[];
-    // for(let i = 0 ; i < dataArray.length;i++){
-    //   for(let j=0; j<dataArray[i].data.length;j++){
-    //     singleArray.push(this.reformatToCorrect(dataArray[i],i,j));
-    //     if(dataArray[i].data[j].Description!=undefined){
-    //       let temp=(this.reformatToCorrect(dataArray[i],i,j));
-    //       temp.Description=dataArray[i].data[j].Description;
-    //       this.descriptionList.push(temp);
-    //     }
-    //   }
-    // };
   } 
  
   // Algorithim Implementation modified from : https://www.geeksforgeeks.org/quick-sort/ 
@@ -133,11 +119,7 @@ export default class ButtonOrder extends React.Component {
   onDotPressed = (item) => {
     let description = "Date: " + item.Date.toDateString() + "\nTime: " + item.Date.toTimeString();
     let button = this.props.rawData.TempButtons[item.ButtonID].ButtonName;
-    // for(let i =0; i<this.descriptionList.length;i++){
-    //   if(item.data==this.descriptionList[i].data){
-    //     this.description+="\n Description: "+this.descriptionList[i].Description;
-    //   }
-    // }
+    
     this.setState({
       showAlert: true,
       alertTitle: button,
@@ -147,19 +129,17 @@ export default class ButtonOrder extends React.Component {
 
   render() {
     return (
-      <View>
-        <View style={this.props.styles.container}>
-          <View style={this.props.styles.border}>
-            <GetDots data={this.state.graphData} onDotPressed={this.onDotPressed}/>
-          </View>
-          <Text style={this.props.styles.regularText}> Tap an entry for more info </Text>
-          {/*
-          <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-            <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-            <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-          </Table>
-          */}
+      <View style={this.props.styles.container}>
+        <View style={this.props.styles.border}>
+          <GetDots data={this.state.graphData} onDotPressed={this.onDotPressed}/>
         </View>
+        <Text style={this.props.styles.regularText}> Tap an entry for more info </Text>
+        {/*
+        <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
+          <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
+          <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
+        </Table>
+        */}
         
         <AwesomeAlert
           show={this.state.showAlert}
