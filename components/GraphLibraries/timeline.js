@@ -58,29 +58,23 @@ export default class Timeline extends React.Component {
     let dataArray = graph.NewData;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
-    let TempDates = [];
+    let dates = [];
+    let dayData = [];
+    
     for (let i = 0; i < dataArray.length; i++) {
-      TempDates.push(dataArray[i].Date);
-    }
-
-    let dates = [...new Set(TempDates)];
-    let currDay = new Date(dates[0]);
-    let dayEntries = [];
-    let allDays = [];
-
-    for (let i = 0; i < dataArray.length; i++) {
-      if (currDay.toLocaleDateString() != dataArray[i].Date.toLocaleDateString()) {
-        allDays.push({Date: currDay, Data: dayEntries});
-        dayEntries = [];
-        currDay = dataArray[i].Date;
+      if (!dates.includes(dataArray[i].Date.toLocaleDateString())) {
+        dates.push(dataArray[i].Date.toLocaleDateString());
       }
-      dayEntries.push(dataArray[i]);
     }
-    allDays.push({Date: currDay, Data: dayEntries});
+
+    for (let i = 0; i < dates.length; i++) {
+      let filterArray = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
+      dayData.push({Date: dates[i], Data: filterArray});
+    }
 
     this.setState({
       isLoading: false,
-      graphData: allDays,
+      graphData: dayData,
       buttonNames: graph.TempButtons,
       // tableData:newTableData,
     });
@@ -123,7 +117,7 @@ export default class Timeline extends React.Component {
     
     this.setState({
       showAlert: true,
-      alertTitle: day.Date.toLocaleDateString(),
+      alertTitle: day.Date,
       alertMessage: alertText,
     });
   }
@@ -137,7 +131,7 @@ export default class Timeline extends React.Component {
             return (
               <TouchableWithoutFeedback onPress={() => this.onDayPressed(day)} key={i}>
                 <View>
-                  <Text style={this.props.styles.timelineText}> {day.Date.toLocaleDateString()} </Text>
+                  <Text style={this.props.styles.timelineText}> {day.Date} </Text>
                   <GetDays day={day}/>
                 </View>
               </TouchableWithoutFeedback>
@@ -189,11 +183,11 @@ function TopGraph() {
   let change = 5;
   let strokes = [0, 2, 3, 2, 5, 2, 3, 2];
   for (let i = 1; i < 8; i++) {
-    lines.push(<Line x1={width * (i / 8)} y1={height + amplitude} x2={width * (i / 8)} y2={height - amplitude} stroke={teal} strokeWidth={strokes[i]} />);
+    lines.push(<Line key={i} x1={width * (i / 8)} y1={height + amplitude} x2={width * (i / 8)} y2={height - amplitude} stroke={teal} strokeWidth={strokes[i]} />);
     amplitude += change;
     change *= -1;
   }
-  lines.push(<Line x1={0} y1={height} x2={width} y2={height} stroke={teal} strokeWidth={5} />);
+  lines.push(<Line key={-1} x1={0} y1={height} x2={width} y2={height} stroke={teal} strokeWidth={5} />);
 
   return(
     <View>
@@ -208,14 +202,13 @@ function GetDays({day}) {
   let width = Dimensions.get("window").width * .7;
   let height = 25;
 
-  let midnight = new Date(day.Date.getTime());
-  midnight.setHours(0, 0, 0, 1);
+  let midnight = new Date(day.Date);
 
   let ticks = [];
-  ticks.push(<Line x1={0} y1={10} x2={width} y2={10} stroke={teal} strokeWidth={1} strokeLinecap={"round"}/>);
+  ticks.push(<Line key={-1} x1={0} y1={10} x2={width} y2={10} stroke={teal} strokeWidth={1} strokeLinecap={"round"}/>);
   for (let i = 0; i < day.Data.length; i++) {
-    let tempX = (((day.Data[i].Date.getTime() - midnight.getTime()) / 1000) / 86400) * width;
-    ticks.push(<Line x1={tempX} y1={5} x2={tempX} y2={15} stroke={colorArray[day.Data[i].ButtonID]} strokeWidth={1.5} strokeLinecap={"round"} key={i}/>);
+    let tempX = ((day.Data[i].Date.getTime() - midnight.getTime()) / 86400000) * width;
+    ticks.push(<Line key={i} x1={tempX} y1={5} x2={tempX} y2={15} stroke={colorArray[day.Data[i].ButtonID]} strokeWidth={1.5} strokeLinecap={"round"}/>);
   }
 
   return (

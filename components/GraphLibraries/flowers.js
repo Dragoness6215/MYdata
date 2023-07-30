@@ -84,31 +84,23 @@ export default class Flowers extends React.Component {
     this.quickSort(dataArray, 0, (dataArray.length - 1));
     let index = Math.max(dataArray.length - 250, 0);
 
-    let TempDates = [];
+    let dates = [];
+    let dayData = [];
     for (let i = index; i < dataArray.length; i++) {
-      TempDates.push(dataArray[i].Date.toDateString());
-    }
-
-    let dates = [...new Set(TempDates)];
-    let currDay = dates[0];
-    let dayEntries = [];
-    let allDays = [];
-
-    for (let i = index; i < dataArray.length; i++) {
-      if (currDay != dataArray[i].Date.toDateString()) {
-        allDays.push({Date: currDay, Data: dayEntries});
-        dayEntries = [];
-        currDay = dataArray[i].Date.toDateString();
+      if (!dates.includes(dataArray[i].Date.toLocaleDateString())) {
+        dates.push(dataArray[i].Date.toLocaleDateString());
       }
-      dayEntries.push(dataArray[i]);
     }
-    allDays.push({Date: currDay, Data: dayEntries});
+
+    for (let i = 0; i < dates.length; i++) {
+      filteredDays = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
+      dayData.push({Date: dates[i], Data: filteredDays});
+    }
     
     this.setState({
       isLoading: false,
-      graphData: allDays,
+      graphData: dayData,
       buttonNames: graph.TempButtons,
-      // tableData:newTableData,
     });
   }
 
@@ -144,7 +136,7 @@ export default class Flowers extends React.Component {
   onDayPressed = (day, buttons) => {
     let description = "";
     for (let i = 0; i < buttons.length; i++) {
-      description += `\n${buttons[i].ButtonName}: ${day.Data.filter((entry) => (entry.ButtonID === i)).length}`;
+      description += `${buttons[i].ButtonName}: ${day.Data.filter((entry) => (entry.ButtonID === i)).length}\n`;
     }
     
     this.setState({

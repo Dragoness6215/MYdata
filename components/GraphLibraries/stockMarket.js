@@ -68,43 +68,31 @@ export default class StockMarket extends React.Component {
     let dataArray = graph.NewData;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
-    let TempDates = [];
-    for (let i = 0; i < dataArray.length; i++) {
-      TempDates.push(dataArray[i].Date.toDateString());
-    }
-
-    let dates = [...new Set(TempDates)];
-    let currDay = new Date(dates[0]);
-    let dayCount = new Array(graph.TempButtons.length).fill(0);
+    let dates = [];
+    let dayData = [];
     let maxCount = 0;
-    let allDays = [];
-
-    for (let i = 0; i < dataArray.length; i++) {
-      if (currDay.toDateString() != dataArray[i].Date.toDateString()) {
-        allDays.push({Date: currDay, Counts: dayCount});
-        if (Math.max(...dayCount) > maxCount) {
-          maxCount = Math.max(...dayCount);
-        }
-
-        dayCount = new Array(graph.TempButtons.length).fill(0);
-        currDay = dataArray[i].Date;
-      }
-      dayCount[dataArray[i].ButtonID] += 1;
-    }
     
-    if (Math.max(...dayCount) > 0) {
-      allDays.push({Date: currDay, Counts: dayCount});
-      if (Math.max(...dayCount) > maxCount) {
-        maxCount = Math.max(...dayCount);
+    for (let i = 0; i < dataArray.length; i++) {
+      if (!dates.includes(dataArray[i].Date.toLocaleDateString())) {
+        dates.push(dataArray[i].Date.toLocaleDateString());
       }
+    }
+
+    for (let i = 0; i < dates.length; i++) {
+      let dayCounts = new Array(graph.TempButtons.length).fill(0);
+      let filterArray = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
+      for (let j = 0; j < filterArray.length; j++) {
+        dayCounts[filterArray[j].ButtonID] += 1;
+      }
+      maxCount = Math.max(...dayCounts, maxCount);
+      dayData.push({Date: dates[i], Counts: dayCounts});
     }
 
     this.setState({
       isLoading: false,
-      graphData: allDays,
+      graphData: dayData,
       maxCount: maxCount,
       buttons: graph.TempButtons,
-      // tableData:newTableData,
     });
   }
 
@@ -141,7 +129,7 @@ export default class StockMarket extends React.Component {
     let title = this.state.buttons[buttonNum].ButtonName;
     let message = "";
     for (let i = 0; i < data.length; i++) {
-      message += `${data[i].Date.toLocaleDateString()}: Button Pressed ${data[i].Counts[buttonNum]} Times`;
+      message += `${data[i].Date}: Button Pressed ${data[i].Counts[buttonNum]} Times`;
     }
 
     this.setState({
@@ -198,10 +186,6 @@ function EachDataPoint({data, maxCount, buttons, onPress}) {
   let height = (width * .1) * (data.length + 2);
   let addHeight = width * .1;
   let scale = (width * (7 / 8)) / maxCount;
-
-  console.log("Rendered");
-  console.log(data);
-  console.log(maxCount);
 
   let lines = [];
   for (let i = 0; i < buttons.length; i++) {

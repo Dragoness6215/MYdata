@@ -29,7 +29,7 @@ export default class Dandelion extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      showAlert:false,
+      showAlert: false,
       alertTitle: "",
       alertMessage: "",
       isLoading: true,

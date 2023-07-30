@@ -61,45 +61,33 @@ export default class HeatMap extends React.Component {
         }
         return tableDataClone;
   }
-  
-  descriptionList=[];
 
   // treats all buttons as the same
   DataProcessing = (graph) => {
     let dataArray = graph.NewData;
-
-    if (!dataArray.length) {
-      return;
-    }
-
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
-    let dateCounts = [];
-    let currDate = dataArray[0].Date;
-    let count = 0;
-
+    let dates = [];
+    let dayData = [];
     for (let i = 0; i < dataArray.length; i++) {
-      if (dataArray[i].Date.toDateString() == currDate.toDateString()) {
-        count++;
-      }
-
-      else {
-        dateCounts.push({date: currDate, count: count});
-        currDate = dataArray[i].Date;
-        count = 1;
+      if (!dates.includes(dataArray[i].Date.toLocaleDateString())) {
+        dates.push(dataArray[i].Date.toLocaleDateString());
       }
     }
 
-    dateCounts.push({date: currDate, count: count});
+    for (let i = 0; i < dates.length; i++) {
+      dayCount = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i])).length;
+      dayData.push({date: new Date(dates[i]), count: dayCount})
+    }
 
-    let startDate = new Date(dateCounts[0].date);
+    let startDate = new Date(dates[0]);
     let endDate = new Date();
-    let totalDateCount = Math.ceil((endDate - startDate) / 86400000);
+    let dayCount = Math.ceil((endDate - startDate) / 86400000);
     
     this.setState({
       isLoading: false,
-      graphData: dateCounts,
-      numberOfDays: totalDateCount,
+      graphData: dayData,
+      numberOfDays: dayCount,
       endDate: endDate,
       // tableData:newTableData,
     });

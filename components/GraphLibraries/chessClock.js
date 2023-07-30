@@ -61,7 +61,7 @@ export default class ChessClock extends React.Component {
   // used to manually reload the state
   updateData(){
     this.setState( { isLoading:true } );
-  }
+  } 
 
   //Changes TableData for BarGraph
   ChangeTableData = (tempData) => {
@@ -72,9 +72,7 @@ export default class ChessClock extends React.Component {
       tableDataClone.push(temp);
     }
     return tableDataClone;
-}
-
-  // descriptionList=[];
+  }
 
   DataProcessing = (graph) => {
     let dataArray = graph.NewData;
