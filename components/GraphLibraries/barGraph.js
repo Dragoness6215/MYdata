@@ -29,9 +29,7 @@ export default class BarGraph extends React.Component {
     super(props);
     this.state = {
       isLoading: true,
-      graphData: { labels: [], datasets: [ { data: [] } ] },
-      tableHead: [],
-      tableData: [],
+      graphData: { labels: [], datasets: [ { data: [] } ] }
     }
   }
   // when passed in json changes, this is called
@@ -39,14 +37,12 @@ export default class BarGraph extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
-      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
   // called on load
   componentDidMount() {
     this.DataProcessing(this.props.rawData);
-    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   // used to manually reload the state
@@ -54,34 +50,14 @@ export default class BarGraph extends React.Component {
     this.setState({ isLoading:true });
   }
 
-  //Changes TableData for BarGraph
-  ChangeTableData = (tempData) => {
-    let tableDataClone=[];
-    let tempString="";
-    let dataPoint={};
-    for(let i = 0; i<tempData.data.descriptions.length;i++){
-      dataPoint = tempData.data.descriptions[i];
-      tempString=dataPoint.ButtonName+"\n";
-      tempString+=dataPoint.Month+"/"+dataPoint.Day+"/"+dataPoint.Year+"\n";
-      tempString+=dataPoint.Hour+":"+dataPoint.Minutes;
-      let row=[];
-      row[0]=tempString;
-      row[1]=dataPoint.Description;
-      console.log(row);
-      tableDataClone.push(row);
-    }
-    console.log(tableDataClone);
-    return tableDataClone;
-  }
-
   DataProcessing = (graph) => {
-    let dataArray = graph.NewData;
+    let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let dataLabels = [];
     let dataCounts = [];
-    for (let i = 0; i < graph.TempButtons.length; i++) {
-      dataLabels.push(graph.TempButtons[i].ButtonName);
+    for (let i = 0; i < graph.Buttons.length; i++) {
+      dataLabels.push(graph.Buttons[i].ButtonName);
       dataCounts.push(0);
     }
 
@@ -92,7 +68,6 @@ export default class BarGraph extends React.Component {
     this.setState({
       isLoading: false,
       graphData: { labels: dataLabels, datasets:[ { data: dataCounts } ] },
-      //tableData:this.ChangeTableData(tempGraphData),
     });
   }
 
@@ -130,20 +105,12 @@ export default class BarGraph extends React.Component {
         <View style={this.props.styles.border}>
           <BarChart
             data={this.state.graphData}
-            width={Dimensions.get("window").width * .75} // from react-native
+            width={Dimensions.get("window").width * .75}
             height={Dimensions.get("window").height * .4}
             fromZero={true}
             chartConfig={chartConfig}
           />
         </View>
-        {/* {this.state.tableData.length > 0 ? (
-          <View style={this.props.styles.container}>
-          <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-              <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-              <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-          </Table>
-        </View>
-        ): null} */}
       </View>
     );
   }

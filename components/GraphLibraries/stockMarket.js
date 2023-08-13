@@ -26,8 +26,6 @@ export default class StockMarket extends React.Component {
       graphData: [],
       buttons: [],
       maxCount: 0,
-      tableHead: [],
-      tableData: [],
     }
   }
 
@@ -36,14 +34,12 @@ export default class StockMarket extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
-      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
   // called on load
   componentDidMount() {
     this.DataProcessing(this.props.rawData);
-    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   // used to manually reload the state
@@ -51,21 +47,8 @@ export default class StockMarket extends React.Component {
     this.setState({ isLoading:true });
   }
 
-  //Changes TableData for BarGraph
-  ChangeTableData = (tempData) => {
-    let tableDataClone=[];
-    for (let i =0; i<this.descriptionList.length;i++){
-      let date= this.descriptionList[i].buttonName + "\n" +this.descriptionList[i].data.replace('T', '\n');
-      let temp= [date, this.descriptionList[i].Description];
-      tableDataClone.push(temp);
-    }
-    return tableDataClone;
-  }
-
-  descriptionList=[];
-
   DataProcessing = (graph) =>{
-    let dataArray = graph.NewData;
+    let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let dates = [];
@@ -79,7 +62,7 @@ export default class StockMarket extends React.Component {
     }
 
     for (let i = 0; i < dates.length; i++) {
-      let dayCounts = new Array(graph.TempButtons.length).fill(0);
+      let dayCounts = new Array(graph.Buttons.length).fill(0);
       let filterArray = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
       for (let j = 0; j < filterArray.length; j++) {
         dayCounts[filterArray[j].ButtonID] += 1;
@@ -92,7 +75,7 @@ export default class StockMarket extends React.Component {
       isLoading: false,
       graphData: dayData,
       maxCount: maxCount,
-      buttons: graph.TempButtons,
+      buttons: graph.Buttons,
     });
   }
 
@@ -145,14 +128,6 @@ export default class StockMarket extends React.Component {
         <View style={this.props.styles.border}>
           <EachDataPoint data={this.state.graphData} maxCount={this.state.maxCount} buttons={this.state.buttons} onPress={this.onPress}/>
         </View>
-        {/* {this.descriptionList.length >0 ? (
-          <View style={this.props.styles.container}>
-          <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-              <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-              <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-          </Table>
-        </View>
-        ): null} */}
         
         <AwesomeAlert
           show={this.state.showAlert}

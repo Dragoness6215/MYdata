@@ -37,8 +37,6 @@ export default class ExampleGraph extends React.Component {
       alertTitle: "",
       alertMessage: "",
       graphData: [],
-      tableHead: [],
-      tableData: [],
     }
   }
 

@@ -34,9 +34,9 @@ class AsyncStorageCode {
       TextArray = parsedText;
 
       for (let i = 0; i < TextArray.length; i++) {
-        for (let j = 0; j < TextArray[i].NewData.length; j++) {
-          let date = new Date(TextArray[i].NewData[j].Date);
-          TextArray[i].NewData[j].Date = date;
+        for (let j = 0; j < TextArray[i].Data.length; j++) {
+          let date = new Date(TextArray[i].Data[j].Date);
+          TextArray[i].Data[j].Date = date;
         }
       }
 
@@ -82,13 +82,13 @@ class AsyncStorageCode {
     graph.Title = name;
     graph.Description = desc;
     graph.GraphType = type;
-    graph.TempButtons = buttons;
+    graph.Buttons = buttons;
 
     this.setAllData();
   };
 
   //prepare to put it into the place by storing in the text array
-  submitHandler = (Title, Description, Type, Buttons) =>{
+  submitHandler = (Title, Description, Type, ButtonNames) =>{
     const Key = Math.random().toString();
 
     if (Description.length === 0) {
@@ -96,14 +96,14 @@ class AsyncStorageCode {
     }
 
     let TempDataNew = [];
-    let TempButtons = [];
-    for (let i = 0; i < Buttons.length; i++) {
-      TempButtons.push({ButtonID:i, ButtonName:Buttons[i]});
+    let Buttons = [];
+    for (let i = 0; i < ButtonNames.length; i++) {
+      Buttons.push({ButtonID:i, ButtonName:ButtonNames[i]});
     }
 
     let GraphType = Type;
-    let NewData = TempDataNew;
-    const newItem = [{ Key, Title, Description, GraphType, TempButtons, NewData}, ...TextArray];
+    let Data = TempDataNew;
+    const newItem = [{ Key, Title, Description, GraphType, Buttons, Data}, ...TextArray];
     TextArray = (newItem);
     this.storeInAsync(newItem);
   };
@@ -120,10 +120,10 @@ class AsyncStorageCode {
   // deletes a data point
   removeDataPoint = (key, dataPoint) => {
     let graph = this.getGraph(key);
-    for (let i = 0; i < graph.NewData.length; i++) {
-      if (graph.NewData[i].Date.getTime() == dataPoint.Date.getTime()) {
+    for (let i = 0; i < graph.Data.length; i++) {
+      if (graph.Data[i].Date.getTime() == dataPoint.Date.getTime()) {
         console.log("Match Found.");
-        graph.NewData.splice(i, 1);
+        graph.Data.splice(i, 1);
         this.setAllData;
       }
     }
@@ -156,10 +156,10 @@ class AsyncStorageCode {
 
   changeDataPointDescription = (key, dataPoint, description) => {
     let graph = this.getGraph(key);
-    for (let i = 0; i < graph.NewData.length; i++) {
-      if (graph.NewData[i].Date.getTime() == dataPoint.Date.getTime()) {
+    for (let i = 0; i < graph.Data.length; i++) {
+      if (graph.Data[i].Date.getTime() == dataPoint.Date.getTime()) {
         console.log("Match Found.");
-        graph.NewData[i].Description = description;
+        graph.Data[i].Description = description;
         this.setAllData();
       }
     }
@@ -182,7 +182,7 @@ class AsyncStorageCode {
   // adds data to a prexisting graph
   addToData(key, entry){
     let graph = this.getGraph(key);
-    graph.NewData.push(entry);
+    graph.Data.push(entry);
 
     this.setAllData();
   }
@@ -252,7 +252,7 @@ class AsyncStorageCode {
     let Description = "No Description Yet";
     let GraphType = "Dandelion";
     let Title = "Big Data Set"
-    let NewData = [];
+    let Data = [];
 
     for (let i = 0; i < maxLength; i++) {
       let refDate = new Date();
@@ -268,16 +268,16 @@ class AsyncStorageCode {
 
       let date = new Date(year, month, day, hour, minute, second, millisecond);
 
-      NewData.push({ButtonID: buttonNum, Date: date});
+      Data.push({ButtonID: buttonNum, Date: date});
     }
 
-    let TempButtons = [
+    let Buttons = [
       {ButtonID:0, ButtonName:"Button 0"},
       {ButtonID:1, ButtonName:"Button 1"},
       {ButtonID:2, ButtonName:"Button 2"},
     ];
 
-    const newItem = [{ Title, Key, Description, GraphType, NewData, TempButtons}, ...TextArray];
+    const newItem = [{ Title, Key, Description, GraphType, Data, Buttons}, ...TextArray];
     TextArray = (newItem);
     this.storeInAsync(newItem);
   }

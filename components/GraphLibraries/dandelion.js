@@ -34,11 +34,8 @@ export default class Dandelion extends React.Component {
       alertMessage: "",
       isLoading: true,
       graphData: [],
-      dates: [],
-      dateTotals: [],
+      dataLength: 0,
       buttonNames: [],
-      tableHead: [],
-      tableData: [],
     }
   }
   
@@ -47,14 +44,12 @@ export default class Dandelion extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
-      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
   // called on load
   componentDidMount() {
     this.DataProcessing(this.props.rawData);
-    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   // used to manually reload the state
@@ -62,34 +57,28 @@ export default class Dandelion extends React.Component {
     this.setState({ isLoading:true });
   }
 
-  //Changes TableData for BarGraph
-  ChangeTableData = (tempData) => {
-  }
-
   DataProcessing = (graph) =>{
-    dataArray = graph.NewData;
+    let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
-    let newArray = [];
+    let dayData = [];
     let dates = [];
     for (let i = 0; i < dataArray.length; i++) {
       if (!dates.includes(dataArray[i].Date.toLocaleDateString())) {
         dates.push(dataArray[i].Date.toLocaleDateString());
       }
-      newArray.push(dataArray[i]);
     }
 
-    let dateTotals = [];
     for (let i = 0; i < dates.length; i++) {
-      dateTotals.push(dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i])).length);
+      let filterArray = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
+      dayData.push({Date: dates[i], Data: filterArray});
     }
 
     this.setState({
       isLoading: false,
-      graphData: newArray,
-      dates: dates,
-      dateTotals: dateTotals,
-      buttonNames: graph.TempButtons,
+      graphData: dayData,
+      dataLength: dataArray.length,
+      buttonNames: graph.Buttons,
     });
   }
 
@@ -122,15 +111,15 @@ export default class Dandelion extends React.Component {
     arr[yp] = temp;
   }
 
-  onPress = (day, data, buttons) => {
+  onPress = (day, buttons) => {
     let description = "";
     for (let i = 0; i < buttons.length; i++) {
-      description += `\n${buttons[i].ButtonName}: ${data.filter((entry) => (entry.Date.toLocaleDateString() == day && entry.ButtonID == i)).length}`;
+      description += `\n${buttons[i].ButtonName}: ${day.Data.filter((entry) => (entry.Date.toLocaleDateString() == day.Date && entry.ButtonID == i)).length}`;
     }
     
     this.setState({
       showAlert: true,
-      alertTitle: day,
+      alertTitle: day.Date,
       alertMessage: description,
     });
   }
@@ -140,9 +129,8 @@ export default class Dandelion extends React.Component {
       <View style={this.props.styles.container}>
         <View style={this.props.styles.border}>
           <GetDandelion 
-            data={this.state.graphData} 
-            dates={this.state.dates} 
-            dateTotals={this.state.dateTotals} 
+            data={this.state.graphData}
+            length={this.state.dataLength}
             colors={colorArray} 
             buttons={this.state.buttonNames} 
             pressHandler={this.onPress}>
@@ -163,7 +151,7 @@ export default class Dandelion extends React.Component {
   }
 }
 
-function GetDandelion({data, dates, dateTotals, colors, buttons, pressHandler}) {
+function GetDandelion({data, length, colors, buttons, pressHandler}) {
   let days = [];
   let spokes = [];
   let entries = [];
@@ -172,50 +160,36 @@ function GetDandelion({data, dates, dateTotals, colors, buttons, pressHandler}) 
 
   let circleX = width/2;
   let circleY = height/2;
-
   let radiusInner = width * .15;
   let radiusOuter = width * .45;
-  let dateLocations = [];
+  let angleIncrement = (2 * Math.PI) / length;
 
-  let prev = -1;
-  for (let i = 0; i < dates.length; i++) {
-    let min = prev + 1;
-    let max = prev + dateTotals[i];
-
-    let minAngle = min * ((2 * Math.PI) / data.length);
-    let maxAngle = max * ((2 * Math.PI) / data.length);
-    let finalAngle = ((maxAngle - minAngle) / 2) + minAngle;
+  let angle = -angleIncrement;
+  let curCount = 0;
+  for (let i = 0; i < data.length; i++) {
+    let day = data[i];
+    let finalAngle = (((day.Data.length - 1) / 2) + curCount) * angleIncrement;
 
     let dayX = (Math.sin(finalAngle) * radiusInner) + circleX;
     let dayY = (-Math.cos(finalAngle) * radiusInner) + circleY;
 
-    if (dates.length === 1) {
+    if (data.length == 1) {
       dayX = circleX;
       dayY = circleY;
     }
 
-    dateLocations.push([dayX, dayY]);
-    days.push(<Circle key={i} cx={dayX} cy={dayY} r={width*0.02} fill={dark} onPress={() => pressHandler(dates[i], data, buttons)}/>)
+    days.push(<Circle key={i} cx={dayX} cy={dayY} r={width*0.03} fill={dark} onPress={() => pressHandler(day, buttons)}/>)
 
-    prev = max;
-  }
+    for (let j = 0; j < day.Data.length; j++) {
+      angle += angleIncrement;
+      let dataX = (Math.sin(angle) * radiusOuter) + circleX;
+      let dataY = (-Math.cos(angle) * radiusOuter) + circleY;
 
-  for (let i = 0; i < data.length; i++) {
-    let angle = i * ((2 * Math.PI) / data.length);
-    let dataX = (Math.sin(angle) * radiusOuter) + circleX;
-    let dataY = (-Math.cos(angle) * radiusOuter) + circleY;
+      entries.push(<Circle key={`${i}${j}`} cx={dataX} cy={dataY} r={width*0.01} fill={colors[data[i].Data[j].ButtonID]}/>);
+      spokes.push(<Line key={`${i}${j}`} x1={dataX} y1={dataY} x2={dayX} y2={dayY} strokeWidth={1.5} stroke={colors[data[i].Data[j].ButtonID]}/>);
+    }
 
-    entries.push(<Circle key={i} cx={dataX} cy={dataY} r={width*0.01} fill={colors[data[i].ButtonID]}/>);
-
-    const dateMatch = (element) => element === date;
-    let date = data[i].Date.toLocaleDateString();
-    let index = dates.findIndex(dateMatch);
-    let dateCoordinates = dateLocations[index];
-
-    let dayX = dateCoordinates[0];
-    let dayY = dateCoordinates[1];
-
-    spokes.push(<Line key={i} x1={dataX} y1={dataY} x2={dayX} y2={dayY} strokeWidth={1.5} stroke={colors[data[i].ButtonID]}/>);
+    curCount += day.Data.length;
   }
 
   return(
@@ -223,7 +197,7 @@ function GetDandelion({data, dates, dateTotals, colors, buttons, pressHandler}) 
       <Svg height={height} width={width}>
         {entries}
         {spokes}
-        <Circle cx={circleX} cy={circleY} r={width*.04} fill={dark}/>
+        <Circle cx={circleX} cy={circleY} r={width*.05} fill={dark}/>
         {days}
       </Svg>
     </View>

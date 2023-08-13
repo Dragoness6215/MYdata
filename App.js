@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { ImageBackground, LogBox, Text, View, FlatList, TouchableWithoutFeedback, TouchableOpacity, ScrollView, StyleSheet, Image, NativeModules, NativeEventEmitter, SectionList, TextInput, Appearance, Dimensions, Linking, Modal } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { PermissionsAndroid, Platform, BackHandler } from "react-native";
+import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
 
 import {ImageResizeMode} from 'react-native/Libraries/Image/ImageResizeMode'
 
@@ -53,7 +54,7 @@ const graphLibrary = [
   { name: "Heat Map", image: require('./assets/HeatMap.png'), description: "Displays the number of times all buttons are pressed for each day." },
   { name: "Stock Market", image: require('./assets/TotalButtons.png'), description: "Displays the number of times each button was pressed each day" },
   { name: "Timeline", image: require('./assets/Timeline.png'), description: "Displays when buttons are pressed each day." },
-  { name: "Triskelion", image: require('./assets/Knot.png'), description: "Displays the number of button pairs pressed." },
+  { name: "Triskelion", image: require('./assets/Triskelion.png'), description: "Displays the number of button pairs pressed." },
 ]
 
 //List of graphs for dropdowns
@@ -140,6 +141,7 @@ export default class App extends React.Component {
           <Stack.Screen name="Graph"          component={Graph}           options={backgroundDefault}/>
           <Stack.Screen name="Graph Settings" component={GraphSettings}   options={backgroundDefault}/>
           <Stack.Screen name="Edit Data"      component={EditData}        options={backgroundDefault}/>
+          <Stack.Screen name="Data Info"      component={DataInfo}        options={backgroundDefault}/>
           <Stack.Screen name="About"          component={About}           options={backgroundDefault}/>
           <Stack.Screen name="Settings"       component={Settings}        options={backgroundDefault}/>
         </Stack.Navigator>
@@ -150,7 +152,6 @@ export default class App extends React.Component {
 
 // Home Screen: Navigates to the other pages, and starts loading
 function HomeScreen({navigation}) {
-
   //Loads in async storage on page load
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => { 
@@ -190,8 +191,7 @@ function HomeScreen({navigation}) {
       )
     })
   }, [navigation]);
-
-  // returns the visualizations.
+  
   return (
     <View style={styles.container}>
       <ImageSwitch styles={styles}/>
@@ -533,7 +533,7 @@ function ButtonSelection({ navigation }) {
 
 // --------------------------- Graph Library --------------------------- \\
 
-function GraphLibrary({navigation}) {
+function GraphLibrary({ navigation }) {
   //Code to display all the various graphs that can be selected
   const [alertText, setAlertText] = useState();
   const [alertTitle, setAlertTitle] = useState();
@@ -907,8 +907,6 @@ function Graph({ route, navigation }) {
 
   const [graph, setGraph] = useState(graphParam);
   const [graphType, setGraphType] = useState(graphParam.GraphType);
-  
-  const [refreshChild, setRefreshChild] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showAlert, setAlert] = useState(false);
   const [alertFailed, setFailedAlert] = useState(false);
@@ -917,12 +915,10 @@ function Graph({ route, navigation }) {
   const [alertMenu, throwAlertMenu] = useState(false);
   const [alertDelete, throwAlertDelete] = useState(false);
 
-  const [thisState, setThisState] = useState({textArray:[], showAlert:false});
-
   // this automatically checks the data every <MINUTE_MS> milliseconds.
   const MINUTE_MS = 250;
   useEffect(() => {
-    const interval = setInterval(() => {checkIfAsyncChanged(); }, MINUTE_MS);
+    const interval = setInterval(() => { checkIfAsyncChanged(); }, MINUTE_MS);
     return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
   }, [])
 
@@ -941,7 +937,7 @@ function Graph({ route, navigation }) {
     // attempting to trigger re-render
     console.log("start refreshing");
     setRefreshing(true);
-    wait(25).then(() => {setRefreshing(false), console.log("Done Refreshing")});
+    wait(25).then(() => { setRefreshing(false), console.log("Done Refreshing") });
   };
 
   // waits x milliseconds then calls a function. Used for refreshing
@@ -955,12 +951,12 @@ function Graph({ route, navigation }) {
     let subject = `${graph.Title}'s Data`;
     let message = `"Graph Name: ${graph.Title}`;
     message += "\n\nButtons"
-    for (let i = 0; i < graph.TempButtons.length; i++) {
-      message += `\nButton ${graph.TempButtons[i].ButtonID}: '${graph.TempButtons[i].ButtonName}'`;
+    for (let i = 0; i < graph.Buttons.length; i++) {
+      message += `\nButton ${graph.Buttons[i].ButtonID}: '${graph.Buttons[i].ButtonName}'`;
     }
     message += "\n\nData Entries"
-    for (let i = 0; i < graph.NewData.length; i++) {
-      message += `"\nData Point: ${graph.NewData[i].Date.toLocaleString()} | Button: ${graph.NewData[i].ButtonID}`;
+    for (let i = 0; i < graph.Data.length; i++) {
+      message += `"\nData Point: ${graph.Data[i].Date.toLocaleString()} | Button: ${graph.Data[i].ButtonID}`;
     }
     console.log("parsed");
     
@@ -982,17 +978,14 @@ function Graph({ route, navigation }) {
       console.log("already checking");
       return;
     }
-    if(GLOBAL.BUTTONPRESSED){
+    if(GLOBAL.BUTTONPRESSED) {
       checking = true;
-      let key = graph.Key;
-      let temp1 = AsyncCode.getTextArray();
-      const temp2 = temp1.filter(textArray => textArray.Key == key);
-      setGraph(temp2[0]);
+      setGraph(AsyncCode.getGraph(keyParam));
       checking = false;
       GLOBAL.BUTTONPRESSED = false;
       console.log("done");
       toggleRefreshChild();
-      //this.forceUpdate();
+      // this.forceUpdate();
     }
   }
 
@@ -1044,7 +1037,6 @@ function Graph({ route, navigation }) {
       GLOBAL.BUTTON0KEY == null;
     }
     AsyncCode.restoreFromAsync();
-    setThisState({showAlert:false, textArray:AsyncCode.getTextArray()});
     navigation.pop();
   }
 
@@ -1064,6 +1056,9 @@ function Graph({ route, navigation }) {
         </TouchableOpacity>
         <TouchableOpacity opacity={0.5} onPress={() => { navigation.navigate('Edit Data', { keyParam: keyParam }); throwAlertMenu(false); }}>
           <Text style={styles.lightButton}> Edit Data Points </Text>
+        </TouchableOpacity>
+        <TouchableOpacity opacity={0.5} onPress={() => { navigation.navigate('Data Info', { keyParam: keyParam }); throwAlertMenu(false); }}>
+          <Text style={styles.lightButton}> Data Info </Text>
         </TouchableOpacity>
         <TouchableOpacity opacity={0.5} onPress={() => { exportData(); throwAlertMenu(false); }}>
           <Text style={styles.lightButton}> Export Data </Text>
@@ -1097,15 +1092,15 @@ function Graph({ route, navigation }) {
           <Text style={styles.regularText}> {graph.Description}</Text>
           
           <GraphSwitch active={graphType}>
-            <HeatMap rawData={graph} key={refreshChild} styles={styles} name="Heat Map" /> 
-            <BarGraph rawData={graph} key={refreshChild} styles={styles} name="Bar Graph"  />
-            <ButtonOrder rawData={graph} key={refreshChild} styles={styles} name="Button Order"  />
-            <Timeline rawData={graph} key={refreshChild} styles={styles} name="Timeline" />
-            <Flowers rawData={graph} key={refreshChild} styles={styles} name="Flowers" />
-            <Triskelion rawData={graph} key={refreshChild} styles={styles} name="Triskelion" />
-            <ChessClock rawData={graph} key={refreshChild} styles={styles} name="Chess Clock"/>
-            <StockMarket rawData={graph} key={refreshChild} styles={styles} name="Stock Market"/>
-            <Dandelion rawData={graph} key={refreshChild} styles={styles} name="Dandelion" />
+            <HeatMap rawData={graph} styles={styles} name="Heat Map" /> 
+            <BarGraph rawData={graph} styles={styles} name="Bar Graph"  />
+            <ButtonOrder rawData={graph} styles={styles} name="Button Order"  />
+            <Timeline rawData={graph} styles={styles} name="Timeline" />
+            <Flowers rawData={graph} styles={styles} name="Flowers" />
+            <Triskelion rawData={graph} styles={styles} name="Triskelion" />
+            <ChessClock rawData={graph} styles={styles} name="Chess Clock"/>
+            <StockMarket rawData={graph} styles={styles} name="Stock Market"/>
+            <Dandelion rawData={graph} styles={styles} name="Dandelion" />
           </GraphSwitch>
         </ViewShot>
         
@@ -1113,7 +1108,7 @@ function Graph({ route, navigation }) {
           <View style={styles.barLine}></View>
           <Text style={styles.header}> Add Data </Text>
 
-          {graph.TempButtons.map((button, i) => {
+          {graph.Buttons.map((button, i) => {
             return (
               <View key={i}>
                 <TouchableOpacity opacity={0.5} onPress={() => buttonPush(button.ButtonID)}>
@@ -1210,7 +1205,7 @@ function GraphSettings({ route, navigation }) {
   const [name, setName] = useState(graph.Title);
   const [desc, setDesc] = useState(graph.Description);
   const [type, setType] = useState(graph.GraphType);
-  const [buttons, setButtons] = useState(graph.TempButtons);
+  const [buttons, setButtons] = useState(graph.Buttons);
 
   const [alert, throwAlert] = useState(false);
   const [alertConfirm, throwAlertConfirm] = useState(false);
@@ -1270,7 +1265,6 @@ function GraphSettings({ route, navigation }) {
 
   const submitChanges = () => {
     AsyncCode.updateGraph(name, desc, type, buttons, keyParam);
-    //.replace("Graph", { keyParam: keyParam });
     navigation.pop();
   }
 
@@ -1287,7 +1281,7 @@ function GraphSettings({ route, navigation }) {
           <TextInput multiline numberOfLines={4} defaultValue={desc} style={styles.input} onChangeText={setDesc} value={desc} editable maxLength={1000}/>
 
           <Text style={styles.subheader}> Graph Type </Text>
-          <Picker style={styles.picker} selectedValue={type} mode="dropdown" onValueChange={(item) => (setType(item))}>
+          <Picker style={styles.picker} selectedValue={type} mode="dropdown" onValueChange={setType}>
             {graphOptions}
           </Picker>
 
@@ -1349,8 +1343,8 @@ function EditData({ route, navigation }) {
   const { keyParam } = route.params;
   let graph = AsyncCode.getGraph(keyParam);
 
-  const [curData, setCurData] = useState(graph.NewData);
-  const [filteredData, setFilteredData] = useState(graph.NewData);
+  const [curData, setCurData] = useState(graph.Data);
+  const [filteredData, setFilteredData] = useState(graph.Data);
 
   const [alertDelete, throwAlertDelete] = useState(false);
   const [alertSuccess, throwAlertSuccess] = useState(false);
@@ -1395,22 +1389,14 @@ function EditData({ route, navigation }) {
   const deleteDataPoint = () => {
     AsyncCode.removeDataPoint(keyParam, dataDelete);
     throwAlertDelete(false);
-    setCurData(AsyncCode.getGraph(keyParam).NewData);
+    setCurData(AsyncCode.getGraph(keyParam).Data);
     filterData();
-    // GLOBAL.ITEM = AsyncCode.getGraph(RawData.Key);
-    //console.log(temp.Data);
-    // throwAlert(null);
-    // changeData(temp);
-    // setCurData(temp.NewData);
-    // setFilteredData(temp.NewData);
-    // GLOBAL.ITEM = temp;
-    // GLOBAL.BUTTONPRESSED = true;
   }
 
   const addDataPointDescription = async(item, description) => {
     throwAlertSuccess(true);
     AsyncCode.changeDataPointDescription(keyParam, item, description);
-    setCurData(AsyncCode.getGraph(keyParam).NewData);
+    setCurData(AsyncCode.getGraph(keyParam).Data);
     filterData();
     // if(description.length >= 1) {
     //   setModalVisible(false);
@@ -1442,7 +1428,7 @@ function EditData({ route, navigation }) {
             return (
               <View key={i} style={styles.barLine}>
                 <Text style={styles.tinyText}> {entry.Date.toLocaleString()} </Text>
-                <Text style={styles.tinyText}> {"Button: " + graph.TempButtons[entry.ButtonID].ButtonName} </Text>
+                <Text style={styles.tinyText}> {"Button: " + graph.Buttons[entry.ButtonID].ButtonName} </Text>
                 <View style={styles.fixToText}>
                   <TouchableWithoutFeedback onPress={() => { setDataPoint(entry); setModalTitle(entry.Date.toLocaleString()); throwModal(true); }}>
                     <Text style={styles.lightButton}> Add Description </Text>
@@ -1464,7 +1450,7 @@ function EditData({ route, navigation }) {
             showCancelButton={true}
             showConfirmButton={true}
             confirmText="Delete"
-            confirmButtonColor="#E07A5F"
+            confirmButtonColor="#63ba83"
             contentContainerStyle={styles.alert}
             messageStyle={styles.alertBody}
             titleStyle={styles.alertText}
@@ -1481,7 +1467,7 @@ function EditData({ route, navigation }) {
             closeOnHardwareBackPress={false}
             showConfirmButton={true}
             confirmText="Okay"
-            confirmButtonColor="#E07A5F"
+            confirmButtonColor="#63ba83"
             contentContainerStyle={styles.alert}
             messageStyle={styles.alertBody}
             titleStyle={styles.alertText}
@@ -1493,18 +1479,53 @@ function EditData({ route, navigation }) {
               <Text style={styles.header}> {modalTitle} </Text>
               <Text style={styles.subheader}> Set Description </Text>
               
-              <TextInput multiline numberOfLines={5} onChangeText={text => setDataDesc(text)} placeholder="Data Description" style={styles.input} editable maxLength={5000}/>
+              <TextInput multiline numberOfLines={4} onChangeText={text => setDataDesc(text)} placeholder="Data Description" style={styles.input} editable maxLength={5000}/>
 
               <View style={styles.fixToText}>
-                <TouchableWithoutFeedback onPress={() => (addDataPointDescription(dataPoint, dataDesc))}>
+                <TouchableOpacity onPress={() => (addDataPointDescription(dataPoint, dataDesc))}>
                   <Text style={styles.smallButton}> Submit </Text>
-                </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback onPress={() => (throwModal(false))}>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => (throwModal(false))}>
                   <Text style={styles.warningButton}> Cancel </Text>
-                </TouchableWithoutFeedback>
+                </TouchableOpacity>
               </View>
             </View>
           </Modal>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function DataInfo({ route, navigation }) {
+  const { keyParam } = route.params;
+  let graph = AsyncCode.getGraph(keyParam);
+  const [tableData, setTableData] = useState([]);
+  
+  // Stuff done on page load.
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', (e) => {
+      let descriptions = [];
+      for (let i = 0; i < graph.Data.length; i++) {
+        let entry = graph.Data[i];
+        if (entry.Description) {
+          descriptions.push([entry.Date.toLocaleDateString(), graph.Buttons[entry.ButtonID].ButtonName, entry.Description]);
+        }
+      }
+      setTableData(descriptions);
+    });
+    return unsubscribe;
+  }, [navigation]);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        <View>
+          <Text style={styles.title}> Data Info </Text>
+          <Table borderStyle={{borderWidth: 2, borderColor:"#343434"}}>
+            <Row data={["Date", "Button", "Description"]} style={styles.tableHead} textStyle={styles.tableHead}/>
+            <Rows data={tableData} textStyle={styles.tableText}/>
+          </Table>
         </View>
       </ScrollView>
     </SafeAreaView>

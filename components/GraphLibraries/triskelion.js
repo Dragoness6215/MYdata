@@ -25,8 +25,6 @@ export default class Triskelion extends React.Component {
       alertMessage:"",
       graphData: [],
       buttonNames: [],
-      tableHead: [],
-      tableData: [],
     }
   }
 
@@ -35,14 +33,12 @@ export default class Triskelion extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
-      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
   // called on load
   componentDidMount(){
     this.DataProcessing(this.props.rawData);
-    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   // used to manually reload the state
@@ -52,19 +48,8 @@ export default class Triskelion extends React.Component {
     });
   }
 
-  //Changes TableData for BarGraph
-  ChangeTableData = (tempData) => {
-    let tableDataClone=[];
-    for (let i =0; i<this.descriptionList.length;i++){
-      let date= this.descriptionList[i].buttonName + "\n" +this.descriptionList[i].data.replace('T', '\n');
-      let temp= [date, this.descriptionList[i].Description];
-      tableDataClone.push(temp);
-    }
-    return tableDataClone;
-  }
-
   DataProcessing = (graph) =>{
-    let dataArray = graph.NewData;
+    let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let buttonFollowed=[[0,0,0],[0,0,0],[0,0,0]];
@@ -75,8 +60,7 @@ export default class Triskelion extends React.Component {
     this.setState({
       isLoading: false,
       graphData: buttonFollowed,
-      buttonNames: graph.TempButtons,
-      // tableData:newTableData,
+      buttonNames: graph.Buttons,
     });
   }
  
@@ -129,14 +113,6 @@ export default class Triskelion extends React.Component {
             <Dot data={this.state.graphData} buttons={this.state.buttonNames} pressHandler={this.whenPressed}></Dot>
           </View>
           <Text style={this.props.styles.regularText}> Press on the dots to see more information </Text>
-        {/* {this.descriptionList.length >0 ? (
-          <View style={this.props.styles.container}>
-            <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-                <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-                <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-            </Table>
-          </View>
-        ): null} */}
         </View>
 
         <AwesomeAlert

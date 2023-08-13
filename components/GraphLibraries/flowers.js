@@ -38,27 +38,20 @@ export default class Flowers extends React.Component {
       graphData: [],
       buttonNames: [],
       tooBig: false,
-      tableHead: [],
-      tableData: [],
     }
   }
 
-  descriptionList=[];
-
-  toBig=false;
   // when passed in json changes, this is called
   // updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
-      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
   // called on load
   componentDidMount() {
     this.DataProcessing(this.props.rawData);
-    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   // used to manually reload the state
@@ -68,19 +61,8 @@ export default class Flowers extends React.Component {
     });
   }
 
-  //Changes TableData for BarGraph
-  ChangeTableData = (tempData) => {
-    let tableDataClone=[];
-    for (let i =0; i<this.descriptionList.length;i++){
-      let date= this.descriptionList[i].buttonName + "\n" +this.descriptionList[i].data.replace('T', '\n');
-      let temp= [date, this.descriptionList[i].Description];
-      tableDataClone.push(temp);
-    }
-    return tableDataClone;
-  }
-
   DataProcessing = (graph) => {
-    let dataArray = graph.NewData;
+    let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
     let index = Math.max(dataArray.length - 250, 0);
 
@@ -93,14 +75,14 @@ export default class Flowers extends React.Component {
     }
 
     for (let i = 0; i < dates.length; i++) {
-      filteredDays = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
-      dayData.push({Date: dates[i], Data: filteredDays});
+      let filterArray = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
+      dayData.push({Date: dates[i], Data: filterArray});
     }
     
     this.setState({
       isLoading: false,
       graphData: dayData,
-      buttonNames: graph.TempButtons,
+      buttonNames: graph.Buttons,
     });
   }
 
@@ -149,20 +131,11 @@ export default class Flowers extends React.Component {
   render() {
     return (
       <View style={this.props.styles.container}>
-        {this.toBig ? (<Text style={this.props.styles.subheader}> Data Limit Exceeded, Some Data Will Be Omitted. </Text>): null }
+        {/* {this.toBig ? (<Text style={this.props.styles.subheader}> Data Limit Exceeded, Some Data Will Be Omitted. </Text>): null } */}
         <View style={this.props.styles.border}>
           <GetFlowers data={this.state.graphData} buttons={this.state.buttonNames} pressHandler={this.onDayPressed}></GetFlowers>
         </View>
         <Text style={this.props.styles.regularText}> Press on the flowers to see more information </Text>
-        
-        {/* {this.descriptionList.length >0 ? (
-              <View style={this.props.styles.container}>
-              <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-                  <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-                  <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-              </Table>
-            </View>
-            ): null} */}
         
         <AwesomeAlert
           show={this.state.showAlert}

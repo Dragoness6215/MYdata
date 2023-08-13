@@ -17,8 +17,6 @@ export default class Timeline extends React.Component {
       alertMessage: "",
       graphData: [],
       buttonNames: [],
-      tableHead: [],
-      tableData: [],
     }
   }
 
@@ -28,14 +26,12 @@ export default class Timeline extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
-      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
   // called on load
   componentDidMount() {
     this.DataProcessing(this.props.rawData);
-    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   // used to manually reload the state
@@ -43,19 +39,8 @@ export default class Timeline extends React.Component {
     this.setState({ isLoading:true });
   }
 
-  //Changes TableData for BarGraph
-  ChangeTableData = (tempData) => {
-    let tableDataClone=[];
-    for (let i =0; i<this.descriptionList.length;i++){
-      let date= this.descriptionList[i].buttonName + "\n" +this.descriptionList[i].data.replace('T', '\n');
-      let temp= [date, this.descriptionList[i].Description];
-      tableDataClone.push(temp);
-    }
-    return tableDataClone;
-  }
-
   DataProcessing = (graph) =>{
-    let dataArray = graph.NewData;
+    let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let dates = [];
@@ -75,8 +60,7 @@ export default class Timeline extends React.Component {
     this.setState({
       isLoading: false,
       graphData: dayData,
-      buttonNames: graph.TempButtons,
-      // tableData:newTableData,
+      buttonNames: graph.Buttons,
     });
   }
 
@@ -138,14 +122,7 @@ export default class Timeline extends React.Component {
             );
           })}
         </View>
-        {/* {this.descriptionList.length >0 ? (
-          <View style={this.props.styles.container}>
-            <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-              <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-              <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-            </Table>
-          </View>
-        ): null} */}
+
         <AwesomeAlert
           show={this.state.showAlert}
           title={this.state.alertTitle}
@@ -180,12 +157,10 @@ function TopGraph() {
   let height = 25;
 
   let amplitude = 10;
-  let change = 5;
   let strokes = [0, 2, 3, 2, 5, 2, 3, 2];
   for (let i = 1; i < 8; i++) {
-    lines.push(<Line key={i} x1={width * (i / 8)} y1={height + amplitude} x2={width * (i / 8)} y2={height - amplitude} stroke={teal} strokeWidth={strokes[i]} />);
-    amplitude += change;
-    change *= -1;
+    lines.push(<Line key={i} x1={width * (i / 8)} y1={height + amplitude} x2={width * (i / 8)} y2={height - amplitude} stroke={teal} strokeWidth={strokes[i]}/>);
+    amplitude += ((i % 2) * 10) - 5;
   }
   lines.push(<Line key={-1} x1={0} y1={height} x2={width} y2={height} stroke={teal} strokeWidth={5} />);
 

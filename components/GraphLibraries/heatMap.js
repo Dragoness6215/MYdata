@@ -26,8 +26,6 @@ export default class HeatMap extends React.Component {
       graphData: [],
       numberOfDays: 0,
       endDate: new Date(),
-      tableHead: [],
-      tableData: [],
     }
   }
 
@@ -36,35 +34,21 @@ export default class HeatMap extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
-      // let newTableData=this.ChangeTableData(tempGraphData);
     }
   }
 
   // called on load
   componentDidMount() {
     this.DataProcessing(this.props.rawData);
-    // let newTableData=this.ChangeTableData(tempGraphData);
   }
 
   updateData() {
     this.setState({ isLoading:true });
   }
 
-  //Changes TableData for BarGraph
-  ChangeTableData = (tempData) => {
-        let tableDataClone=[];
-        for(let i = 0 ; i< this.descriptionList.length;i++){
-          let temp=[];
-          temp.push(this.descriptionList[i][0]);
-          temp.push(this.descriptionList[i][1]);
-          tableDataClone.push(temp);
-        }
-        return tableDataClone;
-  }
-
   // treats all buttons as the same
   DataProcessing = (graph) => {
-    let dataArray = graph.NewData;
+    let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
     let dates = [];
@@ -89,7 +73,6 @@ export default class HeatMap extends React.Component {
       graphData: dayData,
       numberOfDays: dayCount,
       endDate: endDate,
-      // tableData:newTableData,
     });
   }
 
@@ -151,14 +134,6 @@ export default class HeatMap extends React.Component {
           }
         </View>
         <Text style={this.props.styles.regularText}> Click on each day to see more information </Text>
-        {/* {this.descriptionList.length >0 ? (
-        <View style={this.props.styles.container}>
-          <Table borderStyle={{borderWidth: 2, borderColor:{dark}}}>
-            <Row data={this.state.tableHead} style={this.props.styles.tableHead} textStyle={this.props.styles.tableHead}/>
-            <Rows data={this.state.tableData} textStyle={this.props.styles.tableText}/>
-          </Table>
-        </View>
-        ): null} */}
 
         <AwesomeAlert
           show={this.state.showAlert}
