@@ -52,7 +52,7 @@ const graphLibrary = [
   { name: "Dandelion", image: require('./assets/Dandelion.png'), description: "Displays the buttons pressed, separated by days." },
   { name: "Flowers", image: require('./assets/Flowers.png'), description: "Displays the buttons pressed each day." },
   { name: "Heat Map", image: require('./assets/HeatMap.png'), description: "Displays the number of times all buttons are pressed for each day." },
-  { name: "Stock Market", image: require('./assets/TotalButtons.png'), description: "Displays the number of times each button was pressed each day" },
+  { name: "Stock Market", image: require('./assets/StockMarket.png'), description: "Displays the number of times each button was pressed each day" },
   { name: "Timeline", image: require('./assets/Timeline.png'), description: "Displays when buttons are pressed each day." },
   { name: "Triskelion", image: require('./assets/Triskelion.png'), description: "Displays the number of button pairs pressed." },
 ]
