@@ -4,10 +4,8 @@ import {View, Text, Dimensions, TouchableWithoutFeedback} from 'react-native';
 import {Svg, Line} from 'react-native-svg';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
-
 export default class Timeline extends React.Component {
-
-  // State of the class, data stored in here
+  //State of the class, data stored in here
   constructor(props) {
     super(props);
     this.state = {
@@ -20,25 +18,19 @@ export default class Timeline extends React.Component {
     }
   }
 
-  previousProps;
-  // when passed in json changes, this is called
-  // updates the state for the graph
+  //Called on load
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+  }
+  
+  //Called when the data changes and updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
     }
   }
 
-  // called on load
-  componentDidMount() {
-    this.DataProcessing(this.props.rawData);
-  }
-
-  // used to manually reload the state
-  updateData(){
-    this.setState({ isLoading:true });
-  }
-
+  //Processes the incoming data as needed for the graph
   DataProcessing = (graph) =>{
     let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
@@ -52,6 +44,7 @@ export default class Timeline extends React.Component {
       }
     }
 
+    //For each day, filter out the entries for that day
     for (let i = 0; i < dates.length; i++) {
       let filterArray = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
       dayData.push({Date: dates[i], Data: filterArray});
@@ -93,7 +86,8 @@ export default class Timeline extends React.Component {
     arr[yp] = temp;
   }
 
-  onDayPressed = (day) => {
+  //Displays additional info when user interacts with graph
+  pressHandler = (day) => {
     let alertText = "";
     for (let i = 0; i < day.Data.length; i++) {
       alertText += `\n${this.state.buttonNames[day.Data[i].ButtonID].ButtonName} at ${day.Data[i].Date.toLocaleTimeString()}`;
@@ -113,7 +107,7 @@ export default class Timeline extends React.Component {
           <TopGraph/>
           {this.state.graphData.map((day, i) => {
             return (
-              <TouchableWithoutFeedback onPress={() => this.onDayPressed(day)} key={i}>
+              <TouchableWithoutFeedback onPress={() => this.pressHandler(day)} key={i}>
                 <View>
                   <Text style={this.props.styles.timelineText}> {day.Date} </Text>
                   <GetDays day={day}/>
@@ -122,6 +116,7 @@ export default class Timeline extends React.Component {
             );
           })}
         </View>
+        <Text style={this.props.styles.regularText}> Tap the days to see more information </Text>
 
         <AwesomeAlert
           show={this.state.showAlert}
@@ -151,6 +146,7 @@ let teal="#43b0a9";
 let indigo="#6243b0";
 let colorArray=[red,yellow,blue];
 
+//Displays the timeline diagram at the top of the graph
 function TopGraph() {
   let lines = [];
   let width = Dimensions.get("window").width * .7;

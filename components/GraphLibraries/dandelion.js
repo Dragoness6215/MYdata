@@ -1,13 +1,6 @@
-// default imports
 import React from 'react';
-import {View, Dimensions} from 'react-native';
-// custom shape stuff
-import {Svg, Circle, Line} from 'react-native-svg';
-// Table stuff
-import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
-// Global Variables
-import GLOBAL from "../global.js";
-import AsyncCode from '../asyncStorage.js';
+import { View, Text, Dimensions } from 'react-native';
+import { Svg, Circle, Line } from 'react-native-svg';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
 let dark="#343434";
@@ -24,8 +17,7 @@ let indigo="#6243b0";
 let colorArray=[red,yellow,blue];
 
 export default class Dandelion extends React.Component {
-
-  // State of the class, data stored in here
+  //State of the class, data stored in here
   constructor(props) {
     super(props);
     this.state = {
@@ -39,24 +31,19 @@ export default class Dandelion extends React.Component {
     }
   }
   
-  // when passed in json changes, this is called
-  // updates the state for the graph
+  //Called on load
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+  }
+
+  //Called when the data changes and updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
     }
   }
 
-  // called on load
-  componentDidMount() {
-    this.DataProcessing(this.props.rawData);
-  }
-
-  // used to manually reload the state
-  updateData() {
-    this.setState({ isLoading:true });
-  }
-
+  //Processes the incoming data as needed for the graph
   DataProcessing = (graph) =>{
     let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
@@ -69,6 +56,7 @@ export default class Dandelion extends React.Component {
       }
     }
 
+    //For each day, filter out the entries for that day
     for (let i = 0; i < dates.length; i++) {
       let filterArray = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
       dayData.push({Date: dates[i], Data: filterArray});
@@ -111,7 +99,8 @@ export default class Dandelion extends React.Component {
     arr[yp] = temp;
   }
 
-  onPress = (day, buttons) => {
+  //Displays additional info when user interacts with graph
+  pressHandler = (day, buttons) => {
     let description = "";
     for (let i = 0; i < buttons.length; i++) {
       description += `\n${buttons[i].ButtonName}: ${day.Data.filter((entry) => (entry.Date.toLocaleDateString() == day.Date && entry.ButtonID == i)).length}`;
@@ -133,9 +122,10 @@ export default class Dandelion extends React.Component {
             length={this.state.dataLength}
             colors={colorArray} 
             buttons={this.state.buttonNames} 
-            pressHandler={this.onPress}>
+            pressHandler={this.pressHandler}>
           </GetDandelion>
         </View>
+        <Text style={this.props.styles.regularText}> Tap the inner dots to see more information </Text>
         
         <AwesomeAlert
           show={this.state.showAlert}

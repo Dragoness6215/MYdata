@@ -1,21 +1,10 @@
-// default imports
 import React from 'react'
-import {View, Text, Dimensions, TouchableWithoutFeedback} from 'react-native';
-// standard graph stuff
-import {LineChart,BarChart,PieChart,ProgressChart,ContributionGraph,StackedBarChart,} from "react-native-chart-kit";
-// custom shape stuff
-import Svg, {Circle,Ellipse,G,TSpan,TextPath,Path,Polygon,Polyline,Line,Rect,Use,Image,Symbol,Defs,LinearGradient,RadialGradient,Stop,ClipPath,Pattern,Mask,} from 'react-native-svg';
-// Table stuff
-import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
+import { View, Text, Dimensions } from 'react-native';
+import { Svg, Polyline, Line } from 'react-native-svg';
 import AwesomeAlert from 'react-native-awesome-alerts';
-// Global Variables
-import GLOBAL from "../global.js";
-
 
 export default class StockMarket extends React.Component {
-
-  // State of the class, data stored in here
-  // @param: props, the props passed in from the the parent class
+  //State of the class, data stored in here
   constructor(props) {
     super(props);
     this.state = {
@@ -29,24 +18,19 @@ export default class StockMarket extends React.Component {
     }
   }
 
-  // when passed in json changes, this is called
-  // updates the state for the graph
+  //Called on load
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+  }
+
+  //Called when the data changes and updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
     }
   }
 
-  // called on load
-  componentDidMount() {
-    this.DataProcessing(this.props.rawData);
-  }
-
-  // used to manually reload the state
-  updateData() {
-    this.setState({ isLoading:true });
-  }
-
+  //Processes the incoming data as needed for the graph
   DataProcessing = (graph) =>{
     let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
@@ -61,6 +45,8 @@ export default class StockMarket extends React.Component {
       }
     }
 
+    //For each day, filter out the entries for that day
+    //Then, group entries for each day by button
     for (let i = 0; i < dates.length; i++) {
       let dayCounts = new Array(graph.Buttons.length).fill(0);
       let filterArray = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i]));
@@ -108,11 +94,12 @@ export default class StockMarket extends React.Component {
     arr[yp] = temp;
   }
 
-  onPress = (data, buttonNum) => {
+  //Displays additional info when user interacts with graph
+  pressHandler = (data, buttonNum) => {
     let title = this.state.buttons[buttonNum].ButtonName;
     let message = "";
     for (let i = 0; i < data.length; i++) {
-      message += `${data[i].Date}: Button Pressed ${data[i].Counts[buttonNum]} Times`;
+      message += `\n${data[i].Date}: Button Pressed ${data[i].Counts[buttonNum]} Times`;
     }
 
     this.setState({
@@ -126,8 +113,9 @@ export default class StockMarket extends React.Component {
     return (
       <View style={this.props.styles.container}>
         <View style={this.props.styles.border}>
-          <EachDataPoint data={this.state.graphData} maxCount={this.state.maxCount} buttons={this.state.buttons} onPress={this.onPress}/>
+          <EachDataPoint data={this.state.graphData} maxCount={this.state.maxCount} buttons={this.state.buttons} pressHandler={this.pressHandler}/>
         </View>
+        <Text style={this.props.styles.regularText}> Tap the lines to see more information </Text>
         
         <AwesomeAlert
           show={this.state.showAlert}
@@ -156,7 +144,7 @@ let teal="#43b0a9";
 let indigo="#6243b0";
 let colorArray=[red,yellow,blue];
 
-function EachDataPoint({data, maxCount, buttons, onPress}) {
+function EachDataPoint({data, maxCount, buttons, pressHandler}) {
   let width = Dimensions.get("window").width * .7;
   let height = (width * .1) * (data.length + 2);
   let addHeight = width * .1;
@@ -171,7 +159,7 @@ function EachDataPoint({data, maxCount, buttons, onPress}) {
       curHeight += addHeight;
       coordinates += `${(data[j].Counts[i] * scale) + (width / 16)} ${curHeight} `;
     }
-    lines.push(<Polyline points={coordinates} fill={"none"} stroke={colorArray[i]} strokeWidth={5} strokeLinecap={"round"} onPress={() => onPress(data, i)} key={i}/>)
+    lines.push(<Polyline points={coordinates} fill={"none"} stroke={colorArray[i]} strokeWidth={5} strokeLinecap={"round"} onPress={() => pressHandler(data, i)} key={i}/>)
   }
 
   return(

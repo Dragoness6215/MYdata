@@ -1339,6 +1339,7 @@ function GraphSettings({ route, navigation }) {
   );
 }
 
+//Allows the user to modify specific data entries
 function EditData({ route, navigation }) {
   const { keyParam } = route.params;
   let graph = AsyncCode.getGraph(keyParam);
@@ -1359,12 +1360,14 @@ function EditData({ route, navigation }) {
   let placeholders = ["Day", "Month", "Year"];
   let lengths = [2, 2, 4];
 
+  //Updates the search parameters
   const updateSearch = (date, index) => {
     let tempSearch = searchDate;
     tempSearch[index] = date;
     setSearchDate(tempSearch);
   }
 
+  //Filters out data points based on the current search parameters
   const filterData = async() => {
     let filter = [];
     for (let i = 0; i < curData.length; i++) {
@@ -1393,6 +1396,7 @@ function EditData({ route, navigation }) {
     filterData();
   }
 
+  //Adds a description to a data entry
   const addDataPointDescription = async(item, description) => {
     throwAlertSuccess(true);
     AsyncCode.changeDataPointDescription(keyParam, item, description);
@@ -1497,6 +1501,7 @@ function EditData({ route, navigation }) {
   );
 }
 
+//Displays any data descriptions present in the current graph
 function DataInfo({ route, navigation }) {
   const { keyParam } = route.params;
   let graph = AsyncCode.getGraph(keyParam);
@@ -1505,6 +1510,7 @@ function DataInfo({ route, navigation }) {
   // Stuff done on page load.
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', (e) => {
+      //Gathers any descriptions in the dataset
       let descriptions = [];
       for (let i = 0; i < graph.Data.length; i++) {
         let entry = graph.Data[i];
@@ -1523,7 +1529,7 @@ function DataInfo({ route, navigation }) {
         <View>
           <Text style={styles.title}> Data Info </Text>
           <Table borderStyle={{borderWidth: 2, borderColor:"#343434"}}>
-            <Row data={["Date", "Button", "Description"]} style={styles.tableHead} textStyle={styles.tableHead}/>
+            <Row data={["Date", "Button", "Description"]} style={styles.tableHead} textStyle={styles.tableHeadText}/>
             <Rows data={tableData} textStyle={styles.tableText}/>
           </Table>
         </View>

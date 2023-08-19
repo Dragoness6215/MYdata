@@ -1,14 +1,6 @@
-// default imports
-import React, {useEffect, useState, Suspense } from 'react'
-import {View,Text, Dimensions,TouchableWithoutFeedback} from 'react-native';
-// standard graph stuff
-import {LineChart,BarChart,PieChart,ProgressChart,ContributionGraph,StackedBarChart,} from "react-native-chart-kit";
-// custom shape stuff
-import Svg, {Circle,Ellipse,G,TSpan,TextPath,Path,Polygon,Polyline,Line,Rect,Use,Image,Symbol,Defs,LinearGradient,RadialGradient,Stop,ClipPath,Pattern,Mask,} from 'react-native-svg';
-// Table stuff
-import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
-// Global Variables
-import GLOBAL from "../global.js";
+import React from 'react'
+import { View, Text, Dimensions } from 'react-native';
+import { Svg, Rect } from 'react-native-svg';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
 let backgroundColor="#faf5ef";
@@ -23,12 +15,10 @@ let blue="#438ab0";
 let teal="#43b0a9";
 let indigo="#6243b0";
 
-let colorArray=[red,yellow,blue];
-
+let colorArray = [red,yellow,blue];
 
 export default class ChessClock extends React.Component {
-  // State of the class, data stored in here
-  // @param: props, the props passed in from the the parent class
+  //State of the class, data stored in here
   constructor(props) {
     super(props);
     this.state = {
@@ -41,24 +31,19 @@ export default class ChessClock extends React.Component {
     }
   }
 
-  // when passed in json changes, this is called
-  // updates the state for the graph
+  //Called on load
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+  }
+
+  //Called when the data changes and updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
     }
   }
 
-  // called on load
-  componentDidMount() {
-    this.DataProcessing(this.props.rawData);
-  }
-
-  // used to manually reload the state
-  updateData() {
-    this.setState( { isLoading:true } );
-  }
-
+  //Processes the incoming data as needed for the graph
   DataProcessing = (graph) => {
     let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
@@ -68,6 +53,8 @@ export default class ChessClock extends React.Component {
     let maxLength = 0;
     let checked = [];
 
+    //For each entry, checks the susequent entries for the next entry from the same button
+    //Skips over buttons that have already been checked in this way
     for (let i = 0; i < dataArray.length; i++) {
       if (!checked.includes(i)) {
         for (let j = i + 1; j < dataArray.length; j++) {
@@ -97,10 +84,13 @@ export default class ChessClock extends React.Component {
     });
   }
 
-  swap=(arr,xp, yp)=>{
-    var temp = arr[xp];
-    arr[xp] = arr[yp];
-    arr[yp] = temp;
+  // Algorithim Implementation modified from : https://www.geeksforgeeks.org/quick-sort/ 
+  quickSort = (arr, low, high) => {
+    if (low < high) {
+      let pi = this.partition(arr, low, high);
+      this.quickSort(arr, low, pi - 1);
+      this.quickSort(arr, pi + 1, high);
+    }
   }
 
   partition = (arr, low, high) => {
@@ -116,16 +106,15 @@ export default class ChessClock extends React.Component {
     this.swap(arr, i + 1, high);
     return (i + 1);
   }
-
-  quickSort = (arr, low, high) => {
-    if (low < high) {
-      let pi = this.partition(arr, low, high);
-      this.quickSort(arr, low, pi - 1);
-      this.quickSort(arr, pi + 1, high);
-    }
+  
+  swap=(arr,xp, yp)=>{
+    var temp = arr[xp];
+    arr[xp] = arr[yp];
+    arr[yp] = temp;
   }
 
-  whenPressed = (item) => {
+  //Displays additional info when user interacts with graph
+  pressHandler = (item) => {
     let message = `Button: ${item.ButtonName}\nDuration: ${(item.Duration / 1000).toFixed(3)} seconds`;
     
     this.setState({
@@ -138,9 +127,9 @@ export default class ChessClock extends React.Component {
       <View>
         <View style={this.props.styles.container}>
           <View style={this.props.styles.border}>
-            <Lines data={this.state.graphData} maxLength={this.state.maxLength} pressHandler={this.whenPressed}></Lines>
+            <Lines data={this.state.graphData} maxLength={this.state.maxLength} pressHandler={this.pressHandler}></Lines>
           </View>
-          <Text style={this.props.styles.regularText}> Press on the lines to see more information </Text>
+          <Text style={this.props.styles.regularText}> Tap the lines to see more information </Text>
         </View>
 
         <AwesomeAlert

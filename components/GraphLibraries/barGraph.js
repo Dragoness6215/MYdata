@@ -1,10 +1,6 @@
-import React, {useEffect, useState, Suspense } from 'react'
-import {View,Text, Dimensions,TouchableWithoutFeedback} from 'react-native';
-import {LineChart,BarChart,PieChart,ProgressChart,ContributionGraph,StackedBarChart,} from "react-native-chart-kit";
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
-import styles from "../lightStyles.js";
-import GLOBAL from "../global.js";
+import React from 'react'
+import { View, Text, Dimensions } from 'react-native';
+import { BarChart } from "react-native-chart-kit";
 
 let backgroundColor="#faf5ef";
 let highlight="#63ba83";
@@ -23,8 +19,8 @@ const chartConfig = {
   style: { borderRadius: 16 },
 }
 
-// returns a barGraph 
 export default class BarGraph extends React.Component {
+  //State of the class, data stored in here
   constructor(props) {
     super(props);
     this.state = {
@@ -32,24 +28,20 @@ export default class BarGraph extends React.Component {
       graphData: { labels: [], datasets: [ { data: [] } ] }
     }
   }
-  // when passed in json changes, this is called
-  //updates the state for the graph
+
+  //Called on load
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+  }
+
+  //Called when the data changes and updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
     }
   }
 
-  // called on load
-  componentDidMount() {
-    this.DataProcessing(this.props.rawData);
-  }
-
-  // used to manually reload the state
-  updateData() {
-    this.setState({ isLoading:true });
-  }
-
+  //Processes the incoming data as needed for the graph
   DataProcessing = (graph) => {
     let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
@@ -71,6 +63,7 @@ export default class BarGraph extends React.Component {
     });
   }
 
+  // Algorithim Implementation modified from : https://www.geeksforgeeks.org/quick-sort/ 
   quickSort = (arr, low, high) => {
     if (low < high) {
       let pi = this.partition(arr, low, high);

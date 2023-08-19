@@ -24,10 +24,8 @@ let blue="#438ab0";
 let teal="#43b0a9";
 let indigo="#6243b0";
 
-
 export default class ExampleGraph extends React.Component {
-
-  //State Variables: //Initialize any variables that need to be passed to the render here
+  //State Variables: Initialize any variables that need to be passed to the render here
   //Modify them by calling setState in DataProcessing as needed
   constructor(props) {
     super(props);
@@ -65,6 +63,36 @@ export default class ExampleGraph extends React.Component {
     });
   }
 
+  // Algorithim Implementation modified from : https://www.geeksforgeeks.org/quick-sort/ 
+  quickSort = (arr, low, high) => {
+    if (low < high) {
+      let pi = this.partition(arr, low, high);
+      this.quickSort(arr, low, pi - 1);
+      this.quickSort(arr, pi + 1, high);
+    }
+  }
+
+  partition = (arr, low, high) => {
+    let pivot = arr[high];
+    let i = (low - 1);
+
+    for (let j = low; j <= high - 1; j++) {
+      if (arr[j].Date < pivot.Date) {
+        i++;
+        this.swap(arr, i, j);
+      }
+    }
+    this.swap(arr, i + 1, high);
+    return (i + 1);
+  }
+  
+  swap=(arr,xp, yp)=>{
+    var temp = arr[xp];
+    arr[xp] = arr[yp];
+    arr[yp] = temp;
+  }
+
+  //Modify to Reflect Relevant Information For the User Upon Interacting With the Graph
   pressHandler = (data) => {
     let title = "";
     let message = "";
@@ -76,6 +104,7 @@ export default class ExampleGraph extends React.Component {
     });
   }
 
+  //If Needed, Create Additional Functions Outside the Main Body
   render() {
     return (
       <View style={this.props.styles.container}>

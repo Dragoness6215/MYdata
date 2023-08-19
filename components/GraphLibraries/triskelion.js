@@ -1,21 +1,10 @@
-// default imports
-import React, {useEffect, useState, Suspense } from 'react'
-import {View,Text, Dimensions,TouchableWithoutFeedback} from 'react-native';
-// standard graph stuff
-import {LineChart,BarChart,PieChart,ProgressChart,ContributionGraph,StackedBarChart,} from "react-native-chart-kit";
-// custom shape stuff
-import Svg, {Circle,Ellipse,G,TSpan,TextPath,Path,Polygon,Polyline,Line,Rect,Use,Image,Symbol,Defs,LinearGradient,RadialGradient,Stop,ClipPath,Pattern,Mask,} from 'react-native-svg';
-// Table stuff
-import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
-// Global Variables
-import GLOBAL from "../global.js";
+import React from 'react'
+import { View, Text, Dimensions } from 'react-native';
+import { Svg, Circle, Line } from 'react-native-svg';
 import AwesomeAlert from 'react-native-awesome-alerts';
 
-
 export default class Triskelion extends React.Component {
-
-  // State of the class, data stored in here
-  // @param: props, the props passed in from the the parent class
+  //State of the class, data stored in here
   constructor(props) {
     super(props);
     this.state = {
@@ -28,31 +17,31 @@ export default class Triskelion extends React.Component {
     }
   }
 
-  // when passed in json changes, this is called
-  // updates the state for the graph
+  //Called on load
+  componentDidMount(){
+    this.DataProcessing(this.props.rawData);
+  }
+
+  //Called when the data changes and updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
     }
   }
 
-  // called on load
-  componentDidMount(){
-    this.DataProcessing(this.props.rawData);
-  }
-
-  // used to manually reload the state
-  updateData(){
-    this.setState({
-      isLoading:true,
-    });
-  }
-
+  //Processes the incoming data as needed for the graph
   DataProcessing = (graph) =>{
     let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
 
-    let buttonFollowed=[[0,0,0],[0,0,0],[0,0,0]];
+    let buttonFollowed = [];
+    for (let i = 0; i < graph.Buttons.length; i++) {
+      buttonFollowed.push(new Array(graph.Buttons.length).fill(0));
+    }
+    //E.X. for 3 buttons, buttonFollowed = [[0,0,0], [0,0,0], [0,0,0]];
+    //Each nested array represents a separate button
+    
+    //For each button, checks which button follows it
     for(let i = 1; i < dataArray.length; i++) {
       buttonFollowed[dataArray[i - 1].ButtonID][dataArray[i].ButtonID] += 1;
     }
@@ -65,10 +54,12 @@ export default class Triskelion extends React.Component {
   }
  
   // Algorithim Implementation modified from : https://www.geeksforgeeks.org/quick-sort/ 
-  swap=(arr,xp, yp)=>{
-    var temp = arr[xp];
-    arr[xp] = arr[yp];
-    arr[yp] = temp;
+  quickSort = (arr, low, high) => {
+    if (low < high) {
+      let pi = this.partition(arr, low, high);
+      this.quickSort(arr, low, pi - 1);
+      this.quickSort(arr, pi + 1, high);
+    }
   }
 
   partition = (arr, low, high) => {
@@ -84,16 +75,15 @@ export default class Triskelion extends React.Component {
     this.swap(arr, i + 1, high);
     return (i + 1);
   }
-
-  quickSort = (arr, low, high) => {
-    if (low < high) {
-      let pi = this.partition(arr, low, high);
-      this.quickSort(arr, low, pi - 1);
-      this.quickSort(arr, pi + 1, high);
-    }
+  
+  swap=(arr,xp, yp)=>{
+    var temp = arr[xp];
+    arr[xp] = arr[yp];
+    arr[yp] = temp;
   }
 
-  whenPressed = (data, buttons, number) => {
+  //Displays additional info when user interacts with graph
+  pressHandler = (data, buttons, number) => {
     let message = "";
     for (let i = 0; i < buttons.length; i++){
       message += buttons[number].ButtonName + " then " + buttons[i].ButtonName + " : " + data[i] + "\n";
@@ -110,9 +100,9 @@ export default class Triskelion extends React.Component {
       <View>
         <View style={this.props.styles.container}>        
           <View style={this.props.styles.border}>
-            <Dot data={this.state.graphData} buttons={this.state.buttonNames} pressHandler={this.whenPressed}></Dot>
+            <Dot data={this.state.graphData} buttons={this.state.buttonNames} pressHandler={this.pressHandler}></Dot>
           </View>
-          <Text style={this.props.styles.regularText}> Press on the dots to see more information </Text>
+          <Text style={this.props.styles.regularText}> Tap the dots to see more information </Text>
         </View>
 
         <AwesomeAlert
@@ -161,9 +151,11 @@ function Dot ({data, buttons, pressHandler}) {
 
   for (let i = 0; i < buttons.length; i++) {
     let angle = i * ((2 * Math.PI) / buttons.length);
+    //Co-ordinates for the center of the graph
     let diffX = center - (Math.sin(angle) * radius);
     let diffY = center - (Math.cos(angle) * radius);
 
+    //Co-ordinates for the dots representing the buttons
     let diffXL = center - (Math.sin(angle) * radiusOuter);
     let diffYL = center - (Math.cos(angle) * radiusOuter);
     let diffXS = center - (Math.sin(angle) * radiusInner);
@@ -175,7 +167,7 @@ function Dot ({data, buttons, pressHandler}) {
     circles.push(<Circle key={i} cx={diffX} cy={diffY} r={r} fill={colorArray[i]} onPress={() => pressHandler(data[i], buttons, i)}/>)
   }
 
-  for(let i = 0; i < buttons.length; i++){
+  for(let i = 0; i < buttons.length; i++) {
     for(let j = 0; j < buttons.length; j++) {
       if (i == j) {
         selfLinks.push(<Circle key={`${i}${j}`} cx={outerTriangle[i][0]} cy={outerTriangle[i][1]} r={r} strokeWidth={strokeWidth * data[i][j]} stroke={colorArray[i]}/>)
@@ -183,8 +175,8 @@ function Dot ({data, buttons, pressHandler}) {
           selfLinks.push(<Circle key={`${i}${j}+`} cx={outerTriangle[i][0]} cy={outerTriangle[i][1]} r={r + ((strokeWidth * data[i][j]) / 2)} fill={colorArray[i]}/>)
         }
       }
-      else if (data[i][j] > 0){
-        if(alreadyAdded[j][i] == 0){
+      else if (data[i][j] > 0) {
+        if (alreadyAdded[j][i] == 0) {
           //there hasn't been anything added to there, use outer
           links.push(<Line key={`${i}${j}`} x1={outerTriangle[i][0]} y1={outerTriangle[i][1]} x2={outerTriangle[j][0]} y2={outerTriangle[j][1]} strokeWidth={strokeWidth * data[i][j]} stroke={colorArray[i]} strokeLinecap={"round"}/>)
           alreadyAdded[i][j]=1;

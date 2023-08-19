@@ -1,18 +1,7 @@
-// default imports
-import React, {useEffect, useState, Suspense } from 'react'
-import {View,Text, FlatList, Dimensions,TouchableWithoutFeedback,Modal} from 'react-native';
-// standard graph stuff
-import {LineChart,BarChart,PieChart,ProgressChart,ContributionGraph,StackedBarChart,} from "react-native-chart-kit";
-// custom shape stuff
-import Svg, {Circle,Ellipse,G,TSpan,TextPath,Path,Polygon,Polyline,Line,Rect,Use,Image,Symbol,Defs,LinearGradient,RadialGradient,Stop,ClipPath,Pattern,Mask,} from 'react-native-svg';
-// Table stuff
-import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
-// Stylization, use styles.NAME
+import React from 'react'
+import { View, Text, Dimensions } from 'react-native';
+import { Svg, Circle } from 'react-native-svg';
 import AwesomeAlert from 'react-native-awesome-alerts';
-// Global Variables
-import GLOBAL from "../global.js";
-import { sin } from 'react-native/Libraries/Animated/Easing.js';
-import { runInThisContext } from 'vm';
 
 let backgroundColor="#faf5ef";
 let highlight="#63ba83";
@@ -30,8 +19,7 @@ let indigo="#6243b0";
 let colorArray=[red,yellow,blue];
 
 export default class ButtonOrder extends React.Component {
-
-  // State of the class, data stored in here
+  //State of the class, data stored in here
   constructor(props) {
     super(props);
     this.state = {
@@ -43,24 +31,19 @@ export default class ButtonOrder extends React.Component {
     }
   }
 
-  // when passed in json changes, this is called
-  // updates the state for the graph
+  //Called on load
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+  }
+
+  //Called when the data changes and updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
     }
   }
 
-  // called on load
-  componentDidMount() {
-    this.DataProcessing(this.props.rawData);
-  }
-
-  // used to manually reload the state
-  updateData() {
-    this.setState( { isLoading:true } );
-  }
-
+  //Processes the incoming data as needed for the graph
   DataProcessing = (graph) => {
     let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
@@ -72,10 +55,12 @@ export default class ButtonOrder extends React.Component {
   } 
  
   // Algorithim Implementation modified from : https://www.geeksforgeeks.org/quick-sort/ 
-  swap=(arr,xp, yp)=>{
-    var temp = arr[xp];
-    arr[xp] = arr[yp];
-    arr[yp] = temp;
+  quickSort = (arr, low, high) => {
+    if (low < high) {
+      let pi = this.partition(arr, low, high);
+      this.quickSort(arr, low, pi - 1);
+      this.quickSort(arr, pi + 1, high);
+    }
   }
 
   partition = (arr, low, high) => {
@@ -91,17 +76,16 @@ export default class ButtonOrder extends React.Component {
     this.swap(arr, i + 1, high);
     return (i + 1);
   }
-
-  quickSort = (arr, low, high) => {
-    if (low < high) {
-      let pi = this.partition(arr, low, high);
-      this.quickSort(arr, low, pi - 1);
-      this.quickSort(arr, pi + 1, high);
-    }
+  
+  swap=(arr,xp, yp)=>{
+    var temp = arr[xp];
+    arr[xp] = arr[yp];
+    arr[yp] = temp;
   }
 
-  onDotPressed = (item) => {
-    let description = "Date: " + item.Date.toDateString() + "\nTime: " + item.Date.toTimeString();
+  //Displays additional info when user interacts with graph
+  pressHandler = (item) => {
+    let description = "Date: " + item.Date.toDateString() + "\nTime: " + item.Date.toLocaleTimeString();
     let button = this.props.rawData.Buttons[item.ButtonID].ButtonName;
     
     this.setState({
@@ -115,9 +99,9 @@ export default class ButtonOrder extends React.Component {
     return (
       <View style={this.props.styles.container}>
         <View style={this.props.styles.border}>
-          <GetDots data={this.state.graphData} onDotPressed={this.onDotPressed}/>
+          <GetDots data={this.state.graphData} pressHandler={this.pressHandler}/>
         </View>
-        <Text style={this.props.styles.regularText}> Tap an entry for more info </Text>
+        <Text style={this.props.styles.regularText}> Tap the entries to see more information </Text>
         
         <AwesomeAlert
           show={this.state.showAlert}
@@ -133,7 +117,7 @@ export default class ButtonOrder extends React.Component {
   }
 }
 
-function GetDots ({data, onDotPressed}) {
+function GetDots ({data, pressHandler}) {
   let dots = [];
   let width = Dimensions.get("window").width * .75;
   let height = Math.ceil(data.length / 5)*(width / 5);
@@ -141,8 +125,10 @@ function GetDots ({data, onDotPressed}) {
   let radius = width/10;
   let currentX = radius;
   let currentY = radius;
+
+  //For each entry, creates a circle object and gradually fills the screen from left to right, top to bottom
   for(let i = 0; i < data.length; i++){
-    dots.push(<Circle key={i} cx={currentX} cy={currentY} r={radius} onPress={() => onDotPressed(data[i])} fill={colorArray[data[i].ButtonID]}/>);
+    dots.push(<Circle key={i} cx={currentX} cy={currentY} r={radius} onPress={() => pressHandler(data[i])} fill={colorArray[data[i].ButtonID]}/>);
     currentX += radius * 2;
     if(currentX > width){
       currentX = radius;

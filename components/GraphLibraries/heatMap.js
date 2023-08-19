@@ -1,8 +1,6 @@
-import React, {useEffect, useState, Suspense } from 'react'
-import {View,Text, Dimensions,TouchableWithoutFeedback} from 'react-native';
-import {LineChart,BarChart,PieChart,ProgressChart,ContributionGraph,StackedBarChart,} from "react-native-chart-kit";
-import { Table, TableWrapper, Row, Rows, Col, Cols, Cell } from 'react-native-table-component';
-import GLOBAL from "../global.js";
+import React from 'react'
+import { View, Text, Dimensions } from 'react-native';
+import { ContributionGraph } from "react-native-chart-kit";
 import AwesomeAlert from 'react-native-awesome-alerts';
 
 let backgroundColor="#faf5ef";
@@ -16,6 +14,7 @@ const chartConfig = {
 };
 
 export default class HeatMap extends React.Component {
+  //State of the class, data stored in here
   constructor(props) {
     super(props);
     this.state = {
@@ -29,24 +28,19 @@ export default class HeatMap extends React.Component {
     }
   }
 
-  // when passed in json changes, this is called
-  //updates the state for the graph
+  //Called on load
+  componentDidMount() {
+    this.DataProcessing(this.props.rawData);
+  }
+
+  //Called when the data changes and updates the state for the graph
   componentDidUpdate(prevProps, prevState) {
     if (prevProps !== this.props || this.state.isLoading) {
       this.DataProcessing(this.props.rawData);
     }
   }
 
-  // called on load
-  componentDidMount() {
-    this.DataProcessing(this.props.rawData);
-  }
-
-  updateData() {
-    this.setState({ isLoading:true });
-  }
-
-  // treats all buttons as the same
+  //Processes the incoming data as needed for the graph
   DataProcessing = (graph) => {
     let dataArray = graph.Data;
     this.quickSort(dataArray, 0, (dataArray.length - 1));
@@ -59,6 +53,7 @@ export default class HeatMap extends React.Component {
       }
     }
 
+    //For each day, filter out the entries for that day
     for (let i = 0; i < dates.length; i++) {
       dayCount = dataArray.filter((entry) => (entry.Date.toLocaleDateString() == dates[i])).length;
       dayData.push({date: new Date(dates[i]), count: dayCount})
@@ -76,6 +71,7 @@ export default class HeatMap extends React.Component {
     });
   }
 
+  // Algorithim Implementation modified from : https://www.geeksforgeeks.org/quick-sort/ 
   quickSort = (arr, low, high) => {
     if (low < high) {
       let pi = this.partition(arr, low, high);
@@ -104,9 +100,10 @@ export default class HeatMap extends React.Component {
     arr[yp] = temp;
   }
 
-  onPress = (day) => {
+  //Displays additional info when user interacts with graph
+  pressHandler = (day) => {
     let title = day.date.toLocaleDateString();
-    let message = `There were ${day.count} presses on ${day.date.toLocaleDateString()}`;
+    let message = `Total Inputs: ${day.count}`;
 
     this.setState({
       showAlert:true,
@@ -126,14 +123,14 @@ export default class HeatMap extends React.Component {
               values={this.state.graphData}
               width={Dimensions.get("window").width * .75}
               height={(Math.ceil(this.state.numberOfDays / 7 + 2) * (Dimensions.get("window").width * .075))}
-              onDayPress={(day)=>this.onPress(day)}
+              onDayPress={(day)=>this.pressHandler(day)}
               squareSize={Dimensions.get("window").width * .075}
               horizontal={false}
               chartConfig={chartConfig}
             />
           }
         </View>
-        <Text style={this.props.styles.regularText}> Click on each day to see more information </Text>
+        <Text style={this.props.styles.regularText}> Tap the boxes to see more information </Text>
 
         <AwesomeAlert
           show={this.state.showAlert}

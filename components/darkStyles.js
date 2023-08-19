@@ -336,6 +336,13 @@ export default StyleSheet.create({
         fontFamily: minorFont,
         textAlign: "center",
     },
+
+    tableHeadText: {
+        color: darkTextColor,
+        fontSize: tinyFontSize,
+        fontFamily: minorFont,
+        textAlign: "center",
+    },
     
     tableText: { 
         color: textColor,
